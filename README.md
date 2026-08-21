@@ -4,7 +4,7 @@ Webapp de la **17 Feria del Libro de Manizales**. Responde ocho preguntas rápid
 sobre lo que te gusta leer y te arma una ruta a tu medida por la feria: autores
 afines y una agenda con sus actividades.
 
-> Si vienes a conectar Google Sheets, lee **[`HANDOFF.md`](./HANDOFF.md)** — no
+
 > necesitas nada de este archivo.
 
 Repo: https://github.com/CentroCFJC/Match-Literario
