@@ -2,7 +2,7 @@
 
 import { Chip } from '@/components/ui/Chip';
 import { HojaInferior, ManijaHoja } from '@/components/ui/HojaInferior';
-import { useEnviarRespuesta } from '@/hooks/useEnviarRespuesta';
+import { useActualizarRespuesta } from '@/hooks/useEnviarRespuesta';
 import { TEMATICAS } from '@/lib/vocabulario';
 import { useMatchStore } from '@/store/useMatchStore';
 
@@ -10,21 +10,22 @@ import { useMatchStore } from '@/store/useMatchStore';
  * Pantalla 13: ¿te sirvió tu match?
  *
  * Alimenta las columnas `feedback_util` (1 = 👍, 0 = 👎), `autor_faltante` y
- * `tema_faltante`, que además se copian a la pestaña `Feedback`.
+ * `tema_faltante` de la hoja `Respuestas`. Es un PATCH a la misma fila de la
+ * sesión, no una fila nueva.
  */
 export function HojaFeedback() {
   const feedback = useMatchStore((e) => e.feedback);
   const fijarFeedback = useMatchStore((e) => e.fijarFeedback);
   const abrirHojaFeedback = useMatchStore((e) => e.abrirHojaFeedback);
   const mostrarToast = useMatchStore((e) => e.mostrarToast);
-  const enviarRespuesta = useEnviarRespuesta();
+  const actualizarRespuesta = useActualizarRespuesta();
 
   const cerrar = () => abrirHojaFeedback(false);
 
   const enviar = () => {
     cerrar();
     mostrarToast('¡Gracias por tu opinión!');
-    void enviarRespuesta();
+    void actualizarRespuesta();
   };
 
   const estiloPulgar = (activo: boolean, fondo: string) => ({

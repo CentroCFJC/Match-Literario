@@ -53,7 +53,6 @@ export function construirCuerpo(opciones: {
     completado: opciones.completado,
 
     feedbackUtil: feedback.util,
-    feedbackTexto: feedback.texto,
     autorFaltante: feedback.autorFaltante,
     temaFaltante: feedback.temaFaltante,
   };
@@ -62,8 +61,9 @@ export function construirCuerpo(opciones: {
 /**
  * Envía la respuesta completa a `POST /api/respuestas`.
  *
- * Nunca interrumpe a la persona: si falla, se registra y la app sigue. Guardar
- * la estadística no puede costarle el match a nadie.
+ * Es el evento de CREACIÓN de la fila: se usa al ver el match (completado) y al
+ * registrar un abandono. Nunca interrumpe a la persona: si falla, se registra y
+ * la app sigue. Guardar la estadística no puede costarle el match a nadie.
  */
 export function useEnviarRespuesta() {
   return useCallback(async (opciones?: { completado?: boolean; pasoAbandono?: number | null }) => {
@@ -72,21 +72,48 @@ export function useEnviarRespuesta() {
       pasoAbandono: opciones?.pasoAbandono ?? null,
     });
 
-    try {
-      const respuesta = await fetch('/api/respuestas', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(cuerpo),
-      });
-      if (!respuesta.ok) {
-        console.error(
-          '[useEnviarRespuesta] la API respondió',
-          respuesta.status,
-          await respuesta.text(),
-        );
-      }
-    } catch (error) {
-      console.error('[useEnviarRespuesta] no se pudo enviar la respuesta:', error);
-    }
+    await enviar('/api/respuestas', 'POST', cuerpo);
   }, []);
+}
+
+/**
+ * Actualiza la sesión existente con `PATCH /api/respuestas/[sessionId]`.
+ *
+ * Es el evento de ACTUALIZACIÓN: agenda ("Mi agenda" y salir de la agenda),
+ * "Cuéntanos más" y "¿Te sirvió tu match?". El servidor hace upsert por
+ * `session_id`, así que nunca crea una fila duplicada. Igual que el POST, nunca
+ * interrumpe a la persona: si falla, solo se registra.
+ */
+export function useActualizarRespuesta() {
+  return useCallback(async (): Promise<boolean> => {
+    const cuerpo = construirCuerpo({ completado: true, pasoAbandono: null });
+
+    return enviar(`/api/respuestas/${cuerpo.sessionId}`, 'PATCH', cuerpo);
+  }, []);
+}
+
+/**
+ * Envía el cuerpo con el método indicado, registra el fallo sin lanzar y
+ * devuelve `true` si la API respondió bien, para que el llamador sepa si puede
+ * marcar la agenda como sincronizada.
+ */
+async function enviar(url: string, metodo: 'POST' | 'PATCH', cuerpo: CuerpoRespuesta): Promise<boolean> {
+  try {
+    const respuesta = await fetch(url, {
+      method: metodo,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(cuerpo),
+    });
+    if (!respuesta.ok) {
+      console.error(
+        `[useEnviarRespuesta] la API respondió ${respuesta.status} a ${metodo} ${url}:`,
+        await respuesta.text(),
+      );
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error(`[useEnviarRespuesta] no se pudo enviar ${metodo} ${url}:`, error);
+    return false;
+  }
 }

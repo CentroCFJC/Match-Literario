@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
 
+import { useActualizarRespuesta } from '@/hooks/useEnviarRespuesta';
 import { construirAgenda, contarItems, tieneConflictos } from '@/lib/agenda';
 import { useMatchStore } from '@/store/useMatchStore';
 
@@ -13,17 +14,31 @@ export function Agenda() {
   const irA = useMatchStore((e) => e.irA);
   const quitarActividad = useMatchStore((e) => e.quitarActividad);
   const abrirHojaCompartir = useMatchStore((e) => e.abrirHojaCompartir);
+  const agendaSucia = useMatchStore((e) => e.agendaSucia);
+  const fijarAgendaSucia = useMatchStore((e) => e.fijarAgendaSucia);
+  const actualizarRespuesta = useActualizarRespuesta();
 
   const dias = construirAgenda(idsAgenda, actividades, autores);
   const total = contarItems(dias);
   const hayConflictos = tieneConflictos(dias);
+
+  // Al salir solo se persiste si la agenda cambió dentro de la pantalla (quitar
+  // con ×); el alta ya se guardó al tocar "Mi agenda" (ver `Resultado.tsx`).
+  const volverAlResultado = () => {
+    if (agendaSucia) {
+      void actualizarRespuesta().then((ok) => {
+        if (ok) fijarAgendaSucia(false);
+      });
+    }
+    irA('resultado');
+  };
 
   return (
     <div className="flex h-full flex-col">
       <div className="flex flex-shrink-0 items-center gap-[14px] px-6 pb-[14px] pt-[10px]">
         <button
           type="button"
-          onClick={() => irA('resultado')}
+          onClick={volverAlResultado}
           aria-label="Volver a mi match"
           className="flex h-[38px] w-[38px] flex-shrink-0 items-center justify-center rounded-pill border-none bg-surface-card text-[20px] text-burgundy shadow-card"
         >
@@ -34,7 +49,7 @@ export function Agenda() {
 
       <div className="no-scrollbar flex flex-1 flex-col overflow-y-auto px-6 pb-5">
         {total === 0 ? (
-          <AgendaVacia onVolver={() => irA('resultado')} />
+          <AgendaVacia onVolver={volverAlResultado} />
         ) : (
           <>
             {hayConflictos ? (

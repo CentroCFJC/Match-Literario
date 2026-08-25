@@ -66,7 +66,6 @@ export interface DatosExtra {
 /** Respuestas de la hoja opcional de feedback. */
 export interface DatosFeedback {
   util: FeedbackUtil;
-  texto: string;
   autorFaltante: string;
   temaFaltante: Tematica[];
 }
@@ -91,7 +90,6 @@ const EXTRA_VACIO: DatosExtra = {
 
 const FEEDBACK_VACIO: DatosFeedback = {
   util: null,
-  texto: '',
   autorFaltante: '',
   temaFaltante: [],
 };
@@ -137,10 +135,22 @@ interface EstadoMatch {
   estadoResultado: EstadoResultado;
   /** `true` cuando ya hay un match calculado; habilita "Mi último match". */
   tieneMatch: boolean;
+  /**
+   * `true` cuando la respuesta de ESTA sesión ya se envió a Sheets (POST del
+   * match completado). Se persiste para que "Mi último match", que solo re-ve
+   * lo cacheado tras recargar, no dispare un `POST` nuevo.
+   */
+  matchEnviado: boolean;
 
   // --- Agenda -------------------------------------------------------------
   /** Ids de actividad añadidas, en orden de adición. */
   agenda: string[];
+  /**
+   * `true` cuando la agenda cambió desde el último envío y aún no se ha
+   * persistido. Es lo que evita escribir en Sheets si la persona abre la agenda
+   * (o se va) sin tocar nada. Se persiste para sobrevivir a una recarga.
+   */
+  agendaSucia: boolean;
 
   // --- Telemetría (columnas "(auto)" de la hoja) --------------------------
   /** Ids de los autores cuyo perfil abrió. Columna `autores_click_ids`. */
@@ -151,6 +161,10 @@ interface EstadoMatch {
   hojaExtraAbierta: boolean;
   hojaFeedbackAbierta: boolean;
   hojaCompartirAbierta: boolean;
+  /** Confirmación antes de reiniciar: avisa de que se pierde agenda y match. */
+  confirmarReinicioAbierta: boolean;
+  /** `true` si al confirmar hay que arrancar el wizard (INICIAR) y no solo volver. */
+  reiniciarEIniciar: boolean;
   toast: string | null;
 
   // --- Acciones -----------------------------------------------------------
@@ -164,13 +178,17 @@ interface EstadoMatch {
   fijarCatalogo: (autores: Autor[], actividades: Actividad[], diasEvento: FechaISO[]) => void;
   fijarResultados: (resultados: ResultadoMatch[]) => void;
   fijarEstadoResultado: (estado: EstadoResultado) => void;
+  fijarMatchEnviado: (enviado: boolean) => void;
   alternarActividad: (actividadId: string) => void;
   alternarAutor: (autorId: string) => void;
   quitarActividad: (actividadId: string) => void;
+  fijarAgendaSucia: (sucia: boolean) => void;
   abrirModalAutor: (autorId: string | null) => void;
   abrirHojaExtra: (abierta: boolean) => void;
   abrirHojaFeedback: (abierta: boolean) => void;
   abrirHojaCompartir: (abierta: boolean) => void;
+  pedirReinicio: (eIniciar: boolean) => void;
+  cerrarConfirmarReinicio: () => void;
   fijarExtra: (parcial: Partial<DatosExtra>) => void;
   fijarFeedback: (parcial: Partial<DatosFeedback>) => void;
   mostrarToast: (mensaje: string | null) => void;
@@ -193,12 +211,16 @@ export const useMatchStore = create<EstadoMatch>()(
       resultados: [],
       estadoResultado: 'listo',
       tieneMatch: false,
+      matchEnviado: false,
       agenda: [],
+      agendaSucia: false,
       autoresClickeados: [],
       modalAutorId: null,
       hojaExtraAbierta: false,
       hojaFeedbackAbierta: false,
       hojaCompartirAbierta: false,
+      confirmarReinicioAbierta: false,
+      reiniciarEIniciar: false,
       toast: null,
 
       asegurarSessionId: () => {
@@ -275,11 +297,14 @@ export const useMatchStore = create<EstadoMatch>()(
 
       fijarEstadoResultado: (estadoResultado) => set({ estadoResultado }),
 
+      fijarMatchEnviado: (matchEnviado) => set({ matchEnviado }),
+
       alternarActividad: (actividadId) =>
         set((estado) => ({
           agenda: estado.agenda.includes(actividadId)
             ? estado.agenda.filter((id) => id !== actividadId)
             : [...estado.agenda, actividadId],
+          agendaSucia: true,
         })),
 
       /**
@@ -303,11 +328,17 @@ export const useMatchStore = create<EstadoMatch>()(
           agenda: yaEstaban
             ? agenda.filter((id) => !idsSuyas.includes(id))
             : [...new Set([...agenda, ...idsSuyas])],
+          agendaSucia: true,
         });
       },
 
       quitarActividad: (actividadId) =>
-        set((estado) => ({ agenda: estado.agenda.filter((id) => id !== actividadId) })),
+        set((estado) => ({
+          agenda: estado.agenda.filter((id) => id !== actividadId),
+          agendaSucia: true,
+        })),
+
+      fijarAgendaSucia: (agendaSucia) => set({ agendaSucia }),
 
       abrirModalAutor: (modalAutorId) =>
         set((estado) => ({
@@ -323,6 +354,10 @@ export const useMatchStore = create<EstadoMatch>()(
       abrirHojaExtra: (hojaExtraAbierta) => set({ hojaExtraAbierta }),
       abrirHojaFeedback: (hojaFeedbackAbierta) => set({ hojaFeedbackAbierta }),
       abrirHojaCompartir: (hojaCompartirAbierta) => set({ hojaCompartirAbierta }),
+
+      pedirReinicio: (reiniciarEIniciar) =>
+        set({ confirmarReinicioAbierta: true, reiniciarEIniciar }),
+      cerrarConfirmarReinicio: () => set({ confirmarReinicioAbierta: false }),
 
       fijarExtra: (parcial) => set((estado) => ({ extra: { ...estado.extra, ...parcial } })),
       fijarFeedback: (parcial) =>
@@ -344,7 +379,9 @@ export const useMatchStore = create<EstadoMatch>()(
           resultados: [],
           estadoResultado: 'listo',
           tieneMatch: false,
+          matchEnviado: false,
           agenda: [],
+          agendaSucia: false,
           autoresClickeados: [],
           modalAutorId: null,
           hojaExtraAbierta: false,
@@ -371,7 +408,9 @@ export const useMatchStore = create<EstadoMatch>()(
         feedback: estado.feedback,
         resultados: estado.resultados,
         tieneMatch: estado.tieneMatch,
+        matchEnviado: estado.matchEnviado,
         agenda: estado.agenda,
+        agendaSucia: estado.agendaSucia,
         autoresClickeados: estado.autoresClickeados,
       }),
     },

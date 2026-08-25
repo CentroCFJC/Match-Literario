@@ -80,7 +80,6 @@ export const esquemaRespuesta = z.object({
   // --- Feedback ------------------------------------------------------------
   /** 1 = 👍, 0 = 👎, `null` = no respondió. */
   feedbackUtil: z.union([z.literal(0), z.literal(1)]).nullable().default(null),
-  feedbackTexto: z.string().max(1000).default(''),
   autorFaltante: z.string().max(200).default(''),
   temaFaltante: lista(deVocabulario(TEMATICAS), TEMATICAS.length).default([]),
 });
