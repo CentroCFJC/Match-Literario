@@ -12,7 +12,6 @@
  *
  *   Spreadsheet B — "Respuestas Match"  (la app SOLO escribe)
  *     · Respuestas    encabezados en la fila 2, descripciones en la 3, datos desde la 4
- *     · Feedback      misma forma
  *
  * Las dos primeras filas de `Autores` y la primera de las demás son bloques de
  * instrucciones para la curaduría, no datos. Ver `FILA_ENCABEZADOS` en
@@ -169,14 +168,14 @@ export type FeedbackUtil = 1 | 0 | null;
 /**
  * Una fila de `Respuestas`: una sesión.
  *
- * Encabezados de la fila 2, en su orden real (28 columnas, A..AB):
+ * Encabezados de la fila 2, en su orden real (27 columnas, A..AA):
  *
  *   timestamp | session_id | dispositivo | edad | generos_sel | tematicas_sel |
  *   mood_sel | estilo_sel | voces_sel | actividades_interes_sel |
  *   dias_asistencia_sel | franjas_sel | origen_visitante |
  *   donde_consigue_libros | como_se_entero | match_top_ids |
  *   autores_click_ids | autores_ruta_ids | n_autores_ruta |
- *   conflictos_detectados | feedback_util | feedback_texto | autor_faltante |
+ *   conflictos_detectados | feedback_util | autor_faltante |
  *   tema_faltante | tiempo_total_seg | paso_abandono | completado | version_app
  *
  * OJO: este orden NO es el del prompt maestro §7.4 (allí `origen_visitante` va
@@ -243,39 +242,12 @@ export interface Respuesta {
   /** columna `version_app` — de `NEXT_PUBLIC_APP_VERSION`. */
   versionApp: string;
 
-  // --- Feedback (se duplica en la pestaña `Feedback`) ---------------------
+  // --- Feedback (columnas 21-23 de `Respuestas`) --------------------------
   /** columna `feedback_util` — 1 = 👍, 0 = 👎, vacío = no respondió. */
   feedbackUtil: FeedbackUtil;
-  /** columna `feedback_texto` — texto libre. */
-  feedbackTexto: string;
   /** columna `autor_faltante` — "¿Qué autor/a te hubiera gustado ver?". */
   autorFaltante: string;
   /** columna `tema_faltante` — temáticas que siente que faltan. */
-  temaFaltante: Tematica[];
-}
-
-// ===========================================================================
-// Spreadsheet B · Pestaña `Feedback`
-// ===========================================================================
-
-/**
- * Una fila de `Feedback`: el detalle de las respuestas abiertas, separado para
- * que la curaduría pueda leerlas sin abrir las 28 columnas de `Respuestas`.
- *
- * Encabezados de la fila 2:
- *
- *   timestamp | session_id | feedback_util | feedback_texto |
- *   autor_faltante | tema_faltante
- *
- * Solo se escribe si la persona respondió algo; si lo salta todo, no se crea
- * la fila.
- */
-export interface FilaFeedback {
-  timestamp: string;
-  sessionId: string;
-  feedbackUtil: FeedbackUtil;
-  feedbackTexto: string;
-  autorFaltante: string;
   temaFaltante: Tematica[];
 }
 

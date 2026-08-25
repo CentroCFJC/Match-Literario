@@ -2,7 +2,7 @@
 
 import { Chip } from '@/components/ui/Chip';
 import { HojaInferior, ManijaHoja } from '@/components/ui/HojaInferior';
-import { useEnviarRespuesta } from '@/hooks/useEnviarRespuesta';
+import { useActualizarRespuesta } from '@/hooks/useEnviarRespuesta';
 import { COMO_SE_ENTERO, DONDE_LIBROS, ORIGENES_VISITANTE } from '@/lib/vocabulario';
 import { useMatchStore } from '@/store/useMatchStore';
 
@@ -16,7 +16,7 @@ export function HojaCuentanosMas() {
   const fijarExtra = useMatchStore((e) => e.fijarExtra);
   const abrirHojaExtra = useMatchStore((e) => e.abrirHojaExtra);
   const mostrarToast = useMatchStore((e) => e.mostrarToast);
-  const enviarRespuesta = useEnviarRespuesta();
+  const actualizarRespuesta = useActualizarRespuesta();
 
   const cerrar = () => abrirHojaExtra(false);
 
@@ -24,7 +24,8 @@ export function HojaCuentanosMas() {
     cerrar();
     mostrarToast('¡Gracias! Nos ayudas a mejorar.');
     // El envío no bloquea el cierre de la hoja: si falla, la persona ni se entera.
-    void enviarRespuesta();
+    // Es un PATCH a la misma fila (mismo session_id), no una fila nueva.
+    void actualizarRespuesta();
   };
 
   return (

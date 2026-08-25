@@ -5,9 +5,9 @@ conectas los datos reales de Google Sheets.
 
 **Resumen en dos frases:** el proyecto ya está estructurado contra las hojas
 reales de Drive (columna por columna, fila de encabezado por fila de encabezado).
-Solo quedan **cuatro funciones** que rellenar, todas en **un archivo**
-(`src/lib/data/source.ts`); el parseo de filas y la serialización ya están
-escritos y probados.
+La **escritura** ya escribe en Google Sheets real (`saveRespuesta` +
+`updateRespuesta`); solo quedan **dos funciones de lectura** que rellenar cuando
+la base de autores esté lista, todas en **un archivo** (`src/lib/data/source.ts`).
 
 > **El dashboard/panel de administración y el despliegue NO son tu tarea.**
 > Van en la fase 3, con la tercera persona del relevo.
@@ -25,24 +25,25 @@ escritos y probados.
 | Agenda con actividades de varios autores y detección de cruces | ✅ |
 | Compartir por WhatsApp y correo | ✅ |
 | Estado en Zustand persistido en `localStorage` | ✅ |
-| Tipos TS de las 5 pestañas reales (`Autores`, `Actividades`, `Respuestas`, `Feedback`) | ✅ |
+| Tipos TS de las 4 pestañas reales (`Autores`, `Actividades`, `Respuestas`) | ✅ |
 | Parseo de filas reales, con sus rarezas (ver §5) | ✅ |
 | Serialización con el orden exacto de columnas | ✅ |
 | Telemetría implícita completa (§7.5 del prompt maestro) | ✅ |
-| `GET /api/catalogo` y `POST /api/respuestas` con validación definitiva | ✅ |
-| 120 tests (match, agenda, serendipia y contrato con Sheets) | ✅ |
-| **Llamadas reales a `googleapis`** | ❌ **← tu parte** |
+| `GET /api/catalogo`, `POST /api/respuestas` (crear) y `PATCH /api/respuestas/[sessionId]` (actualizar) | ✅ |
+| 125 tests (match, agenda, serendipia y contrato con Sheets) | ✅ |
+| **Escritura real a `googleapis`** (`saveRespuesta` + `updateRespuesta`) | ✅ |
+| **Lectura real de autores/actividades** (base aún no lista) | ⏳ pendiente |
 | Panel de administración y despliegue | ❌ (fase 3, otra persona) |
 
 ```bash
 npm install
 npm run dev        # http://localhost:3000
-npm test           # 120 tests
+npm test           # 125 tests
 npm run typecheck
 ```
 
-Hoy funciona de punta a punta con 20 autores y 30 actividades de ejemplo que
-imitan la forma de la hoja real.
+Hoy la escritura va a Google Sheets real y la lectura funciona de punta a punta
+con 20 autores y 30 actividades de ejemplo que imitan la forma de la hoja real.
 
 ---
 
@@ -51,18 +52,18 @@ imitan la forma de la hoja real.
 ### `src/lib/data/source.ts`
 
 ```ts
-export async function getAutores(): Promise<Autor[]>
-export async function getActividades(): Promise<Actividad[]>
-export async function saveRespuesta(entrada, contexto): Promise<Respuesta>
-export async function saveFeedback(fila): Promise<FilaFeedback>
+export async function getAutores(): Promise<Autor[]>          // TODO: lectura real (pendiente)
+export async function getActividades(): Promise<Actividad[]>  // TODO: lectura real (pendiente)
+export async function saveRespuesta(entrada, contexto): Promise<Respuesta>     // POST → crea la fila (ya real)
+export async function updateRespuesta(entrada, contexto): Promise<Respuesta>   // PATCH → upsert (ya real)
 ```
 
-Cámbiales el cuerpo. **No cambies las firmas.** Cada una lleva su contrato y su
-`// TODO: reemplazar con lectura/escritura real de Google Sheets` con la llamada
-concreta que hace falta. Compruébalo con:
+Solo quedan **`getAutores` y `getActividades`** por conectar. **No cambies las
+firmas.** Cada una lleva su contrato y su `// TODO (lectura diferida)` con la
+llamada concreta. Compruébalo con:
 
 ```bash
-grep -rn "reemplazar con lectura/escritura real" src/
+grep -rn "lectura diferida" src/
 ```
 
 **Ya está hecho por ti** (probado, no lo reescribas):
@@ -73,9 +74,10 @@ grep -rn "reemplazar con lectura/escritura real" src/
 | Fila de `Autores` → objeto `Autor` | `filaAAutor` en `data/parseo.ts` |
 | Fila de `Actividades` → objeto `Actividad` | `filaAActividad` en `data/parseo.ts` |
 | URLs de Drive → imagen servible | `normalizarFotoUrl` en `data/parseo.ts` |
-| `Respuesta` → las 28 celdas en orden | `aFilaRespuestas` en `data/serializacion.ts` |
-| Fila de `Feedback` → 6 celdas | `aFilaFeedback` en `data/serializacion.ts` |
-| Encabezados literales de ambas pestañas | `ENCABEZADOS_*` en `data/serializacion.ts` |
+| `Respuesta` → las 27 celdas en orden | `aFilaRespuestas` en `data/serializacion.ts` |
+| Buscar la fila por `session_id` | `indiceFilaPorSessionId` en `data/actualizacion.ts` |
+| Fusionar el PATCH conservando las columnas "(auto)" | `fusionarFilaRespuestas` en `data/actualizacion.ts` |
+| Encabezados literales de `Respuestas` | `ENCABEZADOS_RESPUESTAS` en `data/serializacion.ts` |
 | `user-agent` → columna `dispositivo` | `dispositivoDesdeUserAgent` |
 
 Tu `getAutores` debería quedar en algo así:
@@ -100,7 +102,6 @@ datos **no** arrancan en la fila 2:
 | `Autores` | filas 1-2 | **fila 3** | fila 4 |
 | `Actividades` | fila 1 | **fila 2** | fila 3 |
 | `Respuestas` | fila 1 | **fila 2** | fila 4 (la 3 son descripciones) |
-| `Feedback` | fila 1 | **fila 2** | fila 4 |
 
 Eso ya está reflejado en `RANGOS`. Si la curaduría inserta o borra filas ahí
 arriba, es lo primero que hay que revisar.
@@ -112,7 +113,7 @@ arriba, es lo primero que hay que revisar.
 | | ID | Permiso para la service account | Pestañas |
 |---|---|---|---|
 | "Base Autores" | `SHEET_AUTORES_ID` | **Lector** | Autores, Actividades, Vocabulario |
-| "Respuestas Match" | `SHEET_RESPUESTAS_ID` | **Editor** | Respuestas, Feedback |
+| "Respuestas Match" | `SHEET_RESPUESTAS_ID` | **Editor** | Respuestas |
 
 `.env.example` ya trae los nombres del prompt maestro §11:
 
@@ -197,10 +198,10 @@ hora_fin | lugar | descripcion | activo
   programación. Si no hay ninguna todavía, cae a los siete días de la feria.
 - `hora_inicio`/`hora_fin` en `HH:MM` 24h; en memoria, minutos desde medianoche.
 
-### `Respuestas` (28 columnas) y `Feedback` (6)
+### `Respuestas` (27 columnas)
 
-El orden exacto está en `ENCABEZADOS_RESPUESTAS` y `ENCABEZADOS_FEEDBACK`, y hay
-un test que falla si `aFilaRespuestas` se desalinea.
+El orden exacto está en `ENCABEZADOS_RESPUESTAS`, y hay un test que falla si
+`aFilaRespuestas` se desalinea.
 
 Detalles que importan:
 - `timestamp` en **UTC** (lo pide el encabezado de la hoja).
@@ -211,19 +212,22 @@ Detalles que importan:
 - `dispositivo` se deriva del user agent **en el servidor** y solo se guarda la
   categoría (movil/tablet/escritorio). El user agent completo no se guarda nunca:
   sería un fingerprint y el prompt maestro lo prohíbe.
-- La fila de `Feedback` **solo se escribe si la persona respondió algo abierto**.
+- Una sesión es **una sola fila**: el `POST` la crea y el `PATCH` la actualiza
+  (upsert por `session_id`). Ya no existe la pestaña `Feedback`: el feedback vive
+  en las columnas 21-23 de `Respuestas`.
 
 ---
 
 ## 7. Cómo comprobar que quedó bien
 
-1. `npm test` sigue en verde (usa el mock, no toca Sheets).
-2. `curl http://localhost:3000/api/catalogo` devuelve tus autores reales.
-3. Recorre el wizard: si el paso 8 muestra las fechas reales de la programación,
-   `getActividades` está bien.
-4. Si los porcentajes salen todos casi iguales, casi seguro es el punto 8 de §5
-   (tags sin curar), no un fallo tuyo.
-5. Envía una respuesta y comprueba que la fila cae alineada con los encabezados.
+1. `npm test` sigue en verde (la lógica pura, no toca Sheets).
+2. Recorre el wizard y comprueba que la fila cae en `Respuestas` del spreadsheet
+   "Respuestas Match" (los logs `[data] CREATE …` del servidor muestran qué se
+   escribió y en qué fila).
+3. Toca "Mi agenda" o responde "¿Te sirvió tu match?" y comprueba que actualiza
+   la MISMA fila (`[data] UPDATE …`), sin duplicar la sesión.
+4. La lectura de autores sigue en mock: `GET /api/catalogo` devuelve los 20
+   autores de ejemplo hasta que la base real esté lista.
 
 ---
 

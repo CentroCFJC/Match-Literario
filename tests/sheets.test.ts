@@ -10,6 +10,7 @@
 
 import { describe, expect, it } from 'vitest';
 
+import { fusionarFilaRespuestas, indiceFilaPorSessionId } from '@/lib/data/actualizacion';
 import {
   conVozDeOrigen,
   filaAActividad,
@@ -17,10 +18,8 @@ import {
   normalizarFotoUrl,
 } from '@/lib/data/parseo';
 import {
-  aFilaFeedback,
   aFilaRespuestas,
   dispositivoDesdeUserAgent,
-  ENCABEZADOS_FEEDBACK,
   ENCABEZADOS_RESPUESTAS,
 } from '@/lib/data/serializacion';
 import type { Respuesta } from '@/lib/data/types';
@@ -306,14 +305,13 @@ const RESPUESTA: Respuesta = {
   completado: true,
   versionApp: '1.0.0',
   feedbackUtil: 1,
-  feedbackTexto: 'Muy bueno',
   autorFaltante: 'Alguien',
   temaFaltante: ['Deporte'],
 };
 
 describe('aFilaRespuestas', () => {
-  it('produce exactamente 28 celdas, una por encabezado', () => {
-    expect(ENCABEZADOS_RESPUESTAS).toHaveLength(28);
+  it('produce exactamente 27 celdas, una por encabezado', () => {
+    expect(ENCABEZADOS_RESPUESTAS).toHaveLength(27);
     expect(aFilaRespuestas(RESPUESTA)).toHaveLength(ENCABEZADOS_RESPUESTAS.length);
   });
 
@@ -364,23 +362,6 @@ describe('aFilaRespuestas', () => {
   });
 });
 
-describe('aFilaFeedback', () => {
-  it('produce 6 celdas, una por encabezado', () => {
-    const fila = aFilaFeedback({
-      timestamp: RESPUESTA.timestamp,
-      sessionId: RESPUESTA.sessionId,
-      feedbackUtil: 0,
-      feedbackTexto: 'Regular',
-      autorFaltante: 'Alguien',
-      temaFaltante: ['Deporte', 'Viajes'],
-    });
-    expect(ENCABEZADOS_FEEDBACK).toHaveLength(6);
-    expect(fila).toHaveLength(6);
-    expect(fila[2]).toBe('0');
-    expect(fila[5]).toBe('Deporte; Viajes');
-  });
-});
-
 describe('dispositivoDesdeUserAgent', () => {
   it('reconoce móvil, tablet y escritorio', () => {
     expect(dispositivoDesdeUserAgent('Mozilla/5.0 (iPhone; CPU iPhone OS 17_0) Mobile/15E148')).toBe(
@@ -396,5 +377,51 @@ describe('dispositivoDesdeUserAgent', () => {
 
   it('cae a escritorio si no hay user agent', () => {
     expect(dispositivoDesdeUserAgent(null)).toBe('escritorio');
+  });
+});
+
+describe('indiceFilaPorSessionId', () => {
+  const filas = [
+    ['t1', 'uuid-1', 'movil'],
+    ['t2', 'uuid-2', 'escritorio'],
+    ['t3', ' uuid-3 ', 'movil'],
+  ];
+
+  it('encuentra la fila por session_id (columna 2)', () => {
+    expect(indiceFilaPorSessionId(filas, 'uuid-2')).toBe(1);
+  });
+
+  it('tolera espacios alrededor del session_id', () => {
+    expect(indiceFilaPorSessionId(filas, 'uuid-3')).toBe(2);
+  });
+
+  it('devuelve -1 cuando no está', () => {
+    expect(indiceFilaPorSessionId(filas, 'uuid-inexistente')).toBe(-1);
+  });
+
+  it('devuelve -1 con una hoja vacía', () => {
+    expect(indiceFilaPorSessionId([], 'uuid-1')).toBe(-1);
+  });
+});
+
+describe('fusionarFilaRespuestas', () => {
+  it('conserva timestamp, dispositivo y version_app de la fila original', () => {
+    const original = aFilaRespuestas(RESPUESTA);
+    const parche = { ...RESPUESTA, timestamp: '2026-09-01T00:00:00.000Z', autorFaltante: 'Nuevo' };
+    const fusionada = fusionarFilaRespuestas(original, parche);
+
+    expect(fusionada).toHaveLength(ENCABEZADOS_RESPUESTAS.length);
+    expect(fusionada[ENCABEZADOS_RESPUESTAS.indexOf('timestamp')]).toBe(RESPUESTA.timestamp);
+    expect(fusionada[ENCABEZADOS_RESPUESTAS.indexOf('dispositivo')]).toBe('movil');
+    expect(fusionada[ENCABEZADOS_RESPUESTAS.indexOf('version_app')]).toBe('1.0.0');
+  });
+
+  it('actualiza el resto de columnas con el parche', () => {
+    const original = aFilaRespuestas(RESPUESTA);
+    const parche = { ...RESPUESTA, feedbackUtil: 0 as const, autorFaltante: 'Otro' };
+    const fusionada = fusionarFilaRespuestas(original, parche);
+
+    expect(fusionada[ENCABEZADOS_RESPUESTAS.indexOf('feedback_util')]).toBe('0');
+    expect(fusionada[ENCABEZADOS_RESPUESTAS.indexOf('autor_faltante')]).toBe('Otro');
   });
 });

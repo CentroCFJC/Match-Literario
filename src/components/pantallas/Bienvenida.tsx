@@ -12,12 +12,19 @@ export function Bienvenida() {
   const irA = useMatchStore((estado) => estado.irA);
   const empezarWizard = useMatchStore((estado) => estado.empezarWizard);
   const reiniciar = useMatchStore((estado) => estado.reiniciar);
+  const pedirReinicio = useMatchStore((estado) => estado.pedirReinicio);
   const tieneMatch = useMatchStore((estado) => estado.tieneMatch);
+  const agenda = useMatchStore((estado) => estado.agenda);
 
   // "Iniciar" siempre empieza de cero: si quedan respuestas o un match de una
   // sesión anterior, se descartan aquí. Quien quiera verlas usa "Mi último
-  // match" en vez de este botón.
+  // match" en vez de este botón. Si hay agenda guardada, se pide confirmación
+  // antes de descartarla.
   const iniciar = () => {
+    if (agenda.length > 0) {
+      pedirReinicio(true);
+      return;
+    }
     reiniciar();
     empezarWizard();
   };

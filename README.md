@@ -18,8 +18,10 @@ npm install
 npm run dev          # http://localhost:3000
 ```
 
-Funciona sin credenciales: los datos vienen de un mock con 20 autores y 30
-actividades que cubren todo el vocabulario.
+La **lectura** (autores y actividades) funciona sin credenciales: viene de un
+mock con 20 autores y 30 actividades que cubren todo el vocabulario. La
+**escritura** (respuestas) ya va a Google Sheets real y requiere las variables
+de `.env` (service account + `SHEET_RESPUESTAS_ID`).
 
 | Comando | Qué hace |
 |---|---|
@@ -37,7 +39,8 @@ src/
     page.tsx                    ruta única; toda la navegación es estado
     layout.tsx  globals.css     tokens del design system
     api/catalogo/route.ts       GET  autores + programación
-    api/respuestas/route.ts     POST una respuesta completa
+    api/respuestas/route.ts     POST crea una respuesta (una fila por sesión)
+    api/respuestas/[sessionId]/route.ts  PATCH actualiza esa misma fila (upsert)
   components/
     AppMatchLiterario.tsx       raíz: qué pantalla se ve + efectos transversales
     ContenedorApp.tsx           ancho y alto de la superficie (layout compartido)
@@ -56,12 +59,14 @@ src/
     autores.ts                  iniciales, color de avatar, chips
     catalogo.ts                 carga de /api/catalogo en el cliente
     data/
-      types.ts                  ← esquema de las 5 pestañas reales
-      source.ts                 ← ÚNICO archivo a tocar en la fase 2
+      types.ts                  ← esquema de las 4 pestañas reales
+      source.ts                 ← frontera con los datos (lectura mock, escritura real)
+      googleSheets.ts           ← cliente/auth de Google Sheets (server-only)
       parseo.ts                 fila de Sheets → objeto (probado)
       serializacion.ts          objeto → fila de Sheets (probado)
+      actualizacion.ts          búsqueda por session_id + fusión del PATCH (probado)
       mock.ts                   datos de ejemplo con la forma de la hoja real
-      esquemas.ts               validación (zod) de POST /api/respuestas
+      esquemas.ts               validación (zod) de POST/PATCH /api/respuestas
     match/
       config.ts                 ← todos los números del algoritmo
       motor.ts                  lógica pura: coseno, pesos, calibración, MMR
@@ -139,8 +144,10 @@ está en `sheets/`:
 - **"Base Autores"** — pestañas `Autores` (18 columnas), `Actividades` (10) y
   `Vocabulario`. La app solo lee. Los días de la feria **se derivan** de
   `Actividades.fecha`; no hay fechas codificadas.
-- **"Respuestas Match"** — pestañas `Respuestas` (28 columnas) y `Feedback` (6).
-  La app solo escribe, una fila por sesión.
+- **"Respuestas Match"** — pestaña `Respuestas` (27 columnas). La app solo
+  escribe: `POST` crea una fila por sesión y `PATCH /api/respuestas/[sessionId]`
+  la actualiza (upsert por `session_id`). Ya no existe la pestaña `Feedback`; el
+  feedback vive en las columnas 21-23 de `Respuestas`.
 
 Las tres primeras filas de cada pestaña son instrucciones para la curaduría, no
 datos: los rangos con las filas correctas están en `RANGOS`, en
@@ -149,10 +156,12 @@ copiadas de esos archivos.
 
 ## Fases del proyecto
 
-1. **Frontend y arquitectura** — hecho (esta fase). 120 tests en verde,
-   probado en escritorio y en celular por red local.
-2. **Conexión con Google Sheets** — ver [`HANDOFF.md`](./HANDOFF.md). Solo
-   hace falta rellenar `src/lib/data/source.ts` (4 funciones, un archivo).
+1. **Frontend y arquitectura** — hecho. 125 tests en verde, probado en
+   escritorio y en celular por red local.
+2. **Conexión con Google Sheets** — ver [`HANDOFF.md`](./HANDOFF.md). La
+   **escritura** ya es real (`saveRespuesta` + `updateRespuesta`); solo falta
+   conectar la **lectura** (`getAutores` / `getActividades`) cuando la base de
+   autores esté lista.
 3. **Panel de administración y despliegue** — pendiente, tercera persona.
 
 Cada persona trabaja en su propia rama y abre PR contra `main`; así se evita

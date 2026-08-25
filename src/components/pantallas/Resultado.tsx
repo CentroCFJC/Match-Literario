@@ -7,6 +7,7 @@ import { useState } from 'react';
 
 import { BotonPrincipal } from '@/components/ui/BotonPrincipal';
 import { useCalcularMatch } from '@/hooks/useCalcularMatch';
+import { useActualizarRespuesta } from '@/hooks/useEnviarRespuesta';
 import { chipsAutor, colorAvatar, iniciales, textoOrigen } from '@/lib/autores';
 import type { Autor } from '@/lib/data/types';
 import { SECCIONES_RESULTADO } from '@/lib/match';
@@ -71,6 +72,10 @@ function ResultadoListo() {
   const abrirHojaExtra = useMatchStore((e) => e.abrirHojaExtra);
   const abrirHojaFeedback = useMatchStore((e) => e.abrirHojaFeedback);
   const reiniciar = useMatchStore((e) => e.reiniciar);
+  const pedirReinicio = useMatchStore((e) => e.pedirReinicio);
+  const agendaSucia = useMatchStore((e) => e.agendaSucia);
+  const fijarAgendaSucia = useMatchStore((e) => e.fijarAgendaSucia);
+  const actualizarRespuesta = useActualizarRespuesta();
   // Cada sección se expande por su cuenta: quien solo quiere más de lo suyo no
   // tiene que cargar también con la lista de descubrimiento, y al revés.
   const [matchExpandido, setMatchExpandido] = useState(false);
@@ -157,7 +162,7 @@ function ResultadoListo() {
         <div className="px-6 pt-[22px] text-center">
           <button
             type="button"
-            onClick={reiniciar}
+            onClick={() => (agenda.length > 0 ? pedirReinicio(false) : reiniciar())}
             className="inline-flex items-center gap-[7px] border-none bg-transparent font-display text-[14px] font-bold text-magenta"
           >
             <span className="text-[16px]" aria-hidden="true">
@@ -169,7 +174,22 @@ function ResultadoListo() {
       </div>
 
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[var(--surface-page)] from-[68%] to-transparent px-5 pb-5 pt-[14px]">
-        <BotonPrincipal variante="oscuro" onClick={() => irA('agenda')} className="!text-[16px]">
+        <BotonPrincipal
+          variante="oscuro"
+          onClick={() => {
+            // "Mi agenda" es el disparador que persiste los cambios de agenda:
+            // se añaden/quitan autores en esta pantalla y se guardan al ver la
+            // agenda. Solo se escribe si la agenda está sucia; tocar el botón
+            // sin haber cambiado nada no toca Sheets.
+            if (agendaSucia) {
+              void actualizarRespuesta().then((ok) => {
+                if (ok) fijarAgendaSucia(false);
+              });
+            }
+            irA('agenda');
+          }}
+          className="!text-[16px]"
+        >
           Mi agenda
           <span className="inline-flex h-6 min-w-[24px] items-center justify-center rounded-pill bg-yellow px-[7px] text-[13px] font-extrabold text-burgundy">
             {agenda.length}

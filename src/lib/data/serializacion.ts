@@ -9,7 +9,7 @@
  * cambia uno, hay que cambiar el otro.
  */
 
-import type { Dispositivo, FilaFeedback, Respuesta } from './types';
+import type { Dispositivo, Respuesta } from './types';
 
 /** Une una lista en una celda. La hoja pide punto y coma como separador. */
 const lista = (valores: readonly string[]) => valores.join('; ');
@@ -18,7 +18,7 @@ const lista = (valores: readonly string[]) => valores.join('; ');
 const booleano = (valor: boolean) => (valor ? 'TRUE' : 'FALSE');
 
 /**
- * Serializa una `Respuesta` a las 28 celdas de la fila, EN EL ORDEN EXACTO de
+ * Serializa una `Respuesta` a las 27 celdas de la fila, EN EL ORDEN EXACTO de
  * los encabezados de la hoja. Pásalo tal cual a `values.append`.
  */
 export function aFilaRespuestas(respuesta: Respuesta): string[] {
@@ -44,25 +44,12 @@ export function aFilaRespuestas(respuesta: Respuesta): string[] {
     String(respuesta.nAutoresRuta),
     String(respuesta.conflictosDetectados),
     respuesta.feedbackUtil === null ? '' : String(respuesta.feedbackUtil),
-    respuesta.feedbackTexto,
     respuesta.autorFaltante,
     lista(respuesta.temaFaltante),
     String(respuesta.tiempoTotalSeg),
     respuesta.pasoAbandono === null ? '' : String(respuesta.pasoAbandono),
     booleano(respuesta.completado),
     respuesta.versionApp,
-  ];
-}
-
-/** Serializa una fila de `Feedback` (6 celdas, A..F). */
-export function aFilaFeedback(fila: FilaFeedback): string[] {
-  return [
-    fila.timestamp,
-    fila.sessionId,
-    fila.feedbackUtil === null ? '' : String(fila.feedbackUtil),
-    fila.feedbackTexto,
-    fila.autorFaltante,
-    lista(fila.temaFaltante),
   ];
 }
 
@@ -94,23 +81,12 @@ export const ENCABEZADOS_RESPUESTAS = [
   'n_autores_ruta',
   'conflictos_detectados',
   'feedback_util',
-  'feedback_texto',
   'autor_faltante',
   'tema_faltante',
   'tiempo_total_seg',
   'paso_abandono',
   'completado',
   'version_app',
-] as const;
-
-/** Encabezados de `Feedback` (fila 2), en el mismo orden que `aFilaFeedback`. */
-export const ENCABEZADOS_FEEDBACK = [
-  'timestamp',
-  'session_id',
-  'feedback_util',
-  'feedback_texto',
-  'autor_faltante',
-  'tema_faltante',
 ] as const;
 
 /**

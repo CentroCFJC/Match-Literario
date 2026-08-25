@@ -11,21 +11,25 @@
  *   · "Base Autores"     (SHEET_AUTORES_ID)     — la app solo LEE
  *   · "Respuestas Match" (SHEET_RESPUESTAS_ID)  — la app solo ESCRIBE
  *
- * Este archivo ya trae hecho lo aburrido y propenso a errores: los rangos con
- * las filas de encabezado correctas, el orden exacto de columnas al escribir, el
- * parseo de las celdas multivaluadas, la normalización de las URLs de Drive y el
- * descarte de las filas plantilla que crea el Apps Script. Lo único que falta es
- * la llamada a `googleapis`.
+ * Este archivo es la frontera entre la app y los datos. Hoy está a medias a
+ * propósito:
+ *   · LECTURA  (autores/actividades) → mock: la base de autores aún no está lista.
+ *   · ESCRITURA (respuestas)         → Google Sheets real (POST append + PATCH upsert).
+ *
+ * Cuando la base de autores esté lista, solo hay que rellenar `getAutores` y
+ * `getActividades` con `values.get` + `filaAAutor`/`filaAActividad`.
  *
  * Ver `HANDOFF.md` para el contrato completo.
  */
 
 import 'server-only';
 
+import { fusionarFilaRespuestas, indiceFilaPorSessionId } from './actualizacion';
+import { conReintento, getSheets } from './googleSheets';
 import { ACTIVIDADES_MOCK, AUTORES_MOCK } from './mock';
 import { conVozDeOrigen } from './parseo';
-import { aFilaFeedback, aFilaRespuestas, dispositivoDesdeUserAgent } from './serializacion';
-import type { Actividad, Autor, FilaFeedback, Respuesta, RespuestaEntrante } from './types';
+import { aFilaRespuestas, dispositivoDesdeUserAgent, ENCABEZADOS_RESPUESTAS } from './serializacion';
+import type { Actividad, Autor, Respuesta, RespuestaEntrante } from './types';
 
 /**
  * El parseo de las filas que se leen y la serialización de las que se escriben
@@ -35,12 +39,11 @@ import type { Actividad, Autor, FilaFeedback, Respuesta, RespuestaEntrante } fro
  */
 export { conVozDeOrigen, filaAActividad, filaAAutor, normalizarFotoUrl } from './parseo';
 export {
-  aFilaFeedback,
   aFilaRespuestas,
   dispositivoDesdeUserAgent,
-  ENCABEZADOS_FEEDBACK,
   ENCABEZADOS_RESPUESTAS,
 } from './serializacion';
+export { fusionarFilaRespuestas, indiceFilaPorSessionId } from './actualizacion';
 
 // ===========================================================================
 // Geometría de las hojas
@@ -55,7 +58,6 @@ export {
  *   Autores       filas 1-2 instrucciones · fila 3 encabezados · datos desde la 4
  *   Actividades   fila 1 instrucciones    · fila 2 encabezados · datos desde la 3
  *   Respuestas    fila 1 aviso            · fila 2 encabezados · fila 3 descripciones · datos desde la 4
- *   Feedback      igual que Respuestas
  *
  * Si la curaduría inserta o borra filas ahí arriba, esto es lo primero que hay
  * que revisar.
@@ -65,11 +67,14 @@ export const RANGOS = {
   autores: 'Autores!A4:R',
   /** Lectura: 10 columnas, A..J, desde la fila 3. */
   actividades: 'Actividades!A3:J',
-  /** Escritura (append): 28 columnas, A..AB. */
-  respuestas: 'Respuestas!A:AB',
-  /** Escritura (append): 6 columnas, A..F. */
-  feedback: 'Feedback!A:F',
+  /** Escritura (append): 27 columnas, A..AA. */
+  respuestas: 'Respuestas!A:AA',
+  /** Lectura para localizar la fila a actualizar: 27 columnas, datos desde la fila 4. */
+  respuestasDatos: 'Respuestas!A4:AA',
 } as const;
+
+/** Primera fila con datos reales en la pestaña `Respuestas` (ver geometría arriba). */
+const FILA_DATOS_RESPUESTAS = 4;
 
 /** Simula la latencia de red de Google Sheets para poder probar la UI de carga. */
 const LATENCIA_MOCK_MS = 350;
@@ -94,10 +99,10 @@ function esperar(ms: number): Promise<void> {
  *   - Lanza SOLO si no puede leer la hoja; la UI lo traduce a la pantalla
  *     "No pudimos cargar los autores".
  *
- * TODO: reemplazar con lectura/escritura real de Google Sheets
- *       → `sheets.spreadsheets.values.get({ spreadsheetId: SHEET_AUTORES_ID,
- *          range: RANGOS.autores })` y pasar cada fila por `filaAAutor`.
- *          Cachear con `revalidate = SHEETS_CACHE_TTL_SECONDS`.
+ * TODO (lectura diferida): cuando la base de autores esté lista, reemplazar el
+ *       mock por `sheets.spreadsheets.values.get({ spreadsheetId: SHEET_AUTORES_ID,
+ *       range: RANGOS.autores })` y pasar cada fila por `filaAAutor`.
+ *       Cachear con `revalidate = SHEETS_CACHE_TTL_SECONDS`.
  */
 export async function getAutores(): Promise<Autor[]> {
   await esperar(LATENCIA_MOCK_MS);
@@ -116,9 +121,9 @@ export async function getAutores(): Promise<Autor[]> {
  *   - `inicioMin`/`finMin` en minutos desde medianoche; si `hora_fin` va vacía,
  *     se asume una hora de duración.
  *
- * TODO: reemplazar con lectura/escritura real de Google Sheets
- *       → `values.get({ spreadsheetId: SHEET_AUTORES_ID,
- *          range: RANGOS.actividades })` y pasar cada fila por `filaAActividad`.
+ * TODO (lectura diferida): cuando la base esté lista, reemplazar el mock por
+ *       `values.get({ spreadsheetId: SHEET_AUTORES_ID,
+ *       range: RANGOS.actividades })` y pasar cada fila por `filaAActividad`.
  */
 export async function getActividades(): Promise<Actividad[]> {
   await esperar(LATENCIA_MOCK_MS);
@@ -142,66 +147,187 @@ export async function getActividades(): Promise<Actividad[]> {
  *     columnas que la hoja marca como "(auto)".
  *   - Devuelve la fila persistida, o lanza si la escritura falla (la API lo
  *     traduce a un 502).
- *
- * TODO: reemplazar con lectura/escritura real de Google Sheets
- *       → `sheets.spreadsheets.values.append({ spreadsheetId: SHEET_RESPUESTAS_ID,
- *          range: RANGOS.respuestas, valueInputOption: 'RAW',
- *          insertDataOption: 'INSERT_ROWS',
- *          requestBody: { values: [aFilaRespuestas(respuesta)] } })`
- *          con reintentos y backoff.
  */
 export async function saveRespuesta(
   entrada: RespuestaEntrante,
   contexto: { userAgent?: string | null } = {},
 ): Promise<Respuesta> {
-  const respuesta: Respuesta = {
-    ...entrada,
-    timestamp: ahoraUTC(),
-    dispositivo: dispositivoDesdeUserAgent(contexto.userAgent),
-    versionApp: process.env.NEXT_PUBLIC_APP_VERSION ?? 'dev',
-  };
+  const respuesta = construirRespuesta(entrada, contexto);
+  const fila = aFilaRespuestas(respuesta);
 
-  await esperar(LATENCIA_MOCK_MS);
+  const resultado = await conReintento(() =>
+    getSheets().spreadsheets.values.append({
+      spreadsheetId: idRespuestas(),
+      range: RANGOS.respuestas,
+      valueInputOption: 'RAW',
+      insertDataOption: 'INSERT_ROWS',
+      requestBody: { values: [fila] },
+    }),
+  );
 
-  // TODO: reemplazar con lectura/escritura real de Google Sheets
-  console.info('[saveRespuesta] mock — fila que se añadiría a `Respuestas`:', {
-    rango: RANGOS.respuestas,
-    fila: aFilaRespuestas(respuesta),
-  });
+  registrarEscritura(
+    'CREATE',
+    respuesta.sessionId,
+    fila,
+    filaDesdeRango(resultado.data.updates?.updatedRange) ?? 0,
+  );
 
   return respuesta;
 }
 
 /**
- * Escribe UNA fila en la pestaña `Feedback`.
+ * Actualiza la fila de `Respuestas` de este `session_id` (upsert).
  *
- * Solo se llama si la persona respondió algo abierto; si lo salta todo no se
- * crea la fila. Los mismos datos van también en las columnas de `Respuestas`:
- * esta pestaña es el detalle cómodo de leer para la curaduría.
- *
- * TODO: reemplazar con lectura/escritura real de Google Sheets
- *       → `values.append({ spreadsheetId: SHEET_RESPUESTAS_ID,
- *          range: RANGOS.feedback, ... })`
+ * Contrato:
+ *   - Si el `session_id` ya existe en la hoja, se actualiza ESA fila; si no, se
+ *     crea (mismo camino que `saveRespuesta`). Nunca se duplica una sesión.
+ *   - El cuerpo es el completo (`RespuestaEntrante`), pero `timestamp`,
+ *     `dispositivo` y `version_app` se conservan de la fila original: solo se
+ *     escriben al crear.
+ *   - Devuelve la fila persistida, o lanza si falla (la API lo traduce a 502).
  */
-export async function saveFeedback(fila: Omit<FilaFeedback, 'timestamp'>): Promise<FilaFeedback> {
-  const completa: FilaFeedback = { ...fila, timestamp: ahoraUTC() };
+export async function updateRespuesta(
+  entrada: RespuestaEntrante,
+  contexto: { userAgent?: string | null } = {},
+): Promise<Respuesta> {
+  // 1) Localiza la fila por `session_id` (columna B), solo sobre los datos.
+  const lectura = await conReintento(() =>
+    getSheets().spreadsheets.values.get({
+      spreadsheetId: idRespuestas(),
+      range: RANGOS.respuestasDatos,
+    }),
+  );
+  const filas = lectura.data.values ?? [];
+  const indice = indiceFilaPorSessionId(filas, entrada.sessionId);
 
-  await esperar(LATENCIA_MOCK_MS);
+  const respuesta = construirRespuesta(entrada, contexto);
 
-  // TODO: reemplazar con lectura/escritura real de Google Sheets
-  console.info('[saveFeedback] mock — fila que se añadiría a `Feedback`:', {
-    rango: RANGOS.feedback,
-    fila: aFilaFeedback(completa),
-  });
+  if (indice === -1) {
+    // 2a) No existía → se crea (mismo camino que el POST).
+    const fila = aFilaRespuestas(respuesta);
+    const resultado = await conReintento(() =>
+      getSheets().spreadsheets.values.append({
+        spreadsheetId: idRespuestas(),
+        range: RANGOS.respuestas,
+        valueInputOption: 'RAW',
+        insertDataOption: 'INSERT_ROWS',
+        requestBody: { values: [fila] },
+      }),
+    );
+    registrarEscritura(
+      'CREATE (upsert: no existía)',
+      respuesta.sessionId,
+      fila,
+      filaDesdeRango(resultado.data.updates?.updatedRange) ?? 0,
+    );
+    return respuesta;
+  }
 
-  return completa;
+  // 2b) Existe → se actualiza esa fila, conservando las columnas "(auto)".
+  const filaAnterior = filas[indice] as string[];
+  const fusionada = fusionarFilaRespuestas(filaAnterior, respuesta);
+  const filaHoja = FILA_DATOS_RESPUESTAS + indice;
+
+  await conReintento(() =>
+    getSheets().spreadsheets.values.update({
+      spreadsheetId: idRespuestas(),
+      range: `Respuestas!A${filaHoja}:AA${filaHoja}`,
+      valueInputOption: 'RAW',
+      requestBody: { values: [fusionada] },
+    }),
+  );
+
+  registrarEscritura('UPDATE', respuesta.sessionId, fusionada, filaHoja, filaAnterior);
+
+  // Devuelve la respuesta con el `timestamp` conservado de la fila original,
+  // para que la firma refleje lo que realmente quedó guardado.
+  return { ...respuesta, timestamp: fusionada[0] ?? respuesta.timestamp };
 }
 
 // ===========================================================================
 // Utilidades
 // ===========================================================================
 
+/**
+ * Arma la `Respuesta` completa a partir de lo que manda el cliente, poniendo
+ * las columnas "(auto)" que solo escribe el servidor: `timestamp`, `dispositivo`
+ * y `version_app`.
+ */
+function construirRespuesta(
+  entrada: RespuestaEntrante,
+  contexto: { userAgent?: string | null },
+): Respuesta {
+  return {
+    ...entrada,
+    timestamp: ahoraUTC(),
+    dispositivo: dispositivoDesdeUserAgent(contexto.userAgent),
+    versionApp: process.env.NEXT_PUBLIC_APP_VERSION ?? 'dev',
+  };
+}
+
 /** ISO 8601 en UTC, que es lo que pide el encabezado de la hoja. */
 function ahoraUTC(): string {
   return new Date().toISOString();
+}
+
+/** Id del spreadsheet "Respuestas Match" (SHEET_RESPUESTAS_ID), validado. */
+function idRespuestas(): string {
+  const id = process.env.SHEET_RESPUESTAS_ID;
+  if (!id) throw new Error('[data] falta la variable SHEET_RESPUESTAS_ID.');
+  return id;
+}
+
+/** Extrae el número de fila de un rango A1 tipo "Respuestas!A5:AA5" → 5. */
+function filaDesdeRango(rango?: string | null): number | null {
+  if (!rango) return null;
+  const match = rango.match(/!([A-Z]+)(\d+)/);
+  return match ? Number(match[2]) : null;
+}
+
+/**
+ * Convierte una fila serializada (27 celdas) en un objeto legible
+ * `{ nombre_columna: valor }`, para que el log muestre qué se escribió sin tener
+ * que contar columnas.
+ */
+function filaAObjeto(fila: readonly string[]): Record<string, string> {
+  const objeto: Record<string, string> = {};
+  ENCABEZADOS_RESPUESTAS.forEach((encabezado, i) => {
+    objeto[encabezado] = fila[i] ?? '';
+  });
+  return objeto;
+}
+
+/**
+ * Registra en consola la escritura (create o update) con su contenido completo
+ * y, en las actualizaciones, un `cambios` con solo las columnas que cambiaron.
+ *
+ * Es el detalle que permite ver qué llega a `Respuestas` en el log del servidor;
+ * `posición` es la fila real de la hoja (o 0 si no se pudo derivar).
+ */
+function registrarEscritura(
+  accion: string,
+  sessionId: string,
+  fila: readonly string[],
+  posicion: number,
+  filaAnterior?: readonly string[],
+): void {
+  const actual = filaAObjeto(fila);
+
+  if (filaAnterior) {
+    const anterior = filaAObjeto(filaAnterior);
+    const cambios: Record<string, { de: string; a: string }> = {};
+    for (const [columna, valor] of Object.entries(actual)) {
+      if (anterior[columna] !== valor) cambios[columna] = { de: anterior[columna], a: valor };
+    }
+    console.info(
+      `[data] ${accion} Respuestas · session ${sessionId} · posición #${posicion}`,
+      { cambios, fila: actual },
+    );
+    return;
+  }
+
+  console.info(
+    `[data] ${accion} Respuestas · session ${sessionId} · posición #${posicion}`,
+    { fila: actual },
+  );
 }

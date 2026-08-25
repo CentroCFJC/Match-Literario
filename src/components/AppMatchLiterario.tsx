@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { ContenedorApp } from '@/components/ContenedorApp';
 import { HojaCompartir } from '@/components/hojas/HojaCompartir';
+import { HojaConfirmarReinicio } from '@/components/hojas/HojaConfirmarReinicio';
 import { HojaCuentanosMas } from '@/components/hojas/HojaCuentanosMas';
 import { HojaFeedback } from '@/components/hojas/HojaFeedback';
 import { ModalAutor } from '@/components/hojas/ModalAutor';
@@ -31,6 +32,7 @@ export function AppMatchLiterario() {
   const hojaExtraAbierta = useMatchStore((e) => e.hojaExtraAbierta);
   const hojaFeedbackAbierta = useMatchStore((e) => e.hojaFeedbackAbierta);
   const hojaCompartirAbierta = useMatchStore((e) => e.hojaCompartirAbierta);
+  const confirmarReinicioAbierta = useMatchStore((e) => e.confirmarReinicioAbierta);
 
   useCatalogoAlArrancar(hidratado);
   useCerrarConEscape();
@@ -76,6 +78,9 @@ export function AppMatchLiterario() {
       <AnimatePresence>{hojaFeedbackAbierta ? <HojaFeedback key="fb" /> : null}</AnimatePresence>
       <AnimatePresence>
         {hojaCompartirAbierta ? <HojaCompartir key="compartir" /> : null}
+      </AnimatePresence>
+      <AnimatePresence>
+        {confirmarReinicioAbierta ? <HojaConfirmarReinicio key="reinicio" /> : null}
       </AnimatePresence>
 
       <Toast />
@@ -125,14 +130,16 @@ function useCatalogoAlArrancar(hidratado: boolean) {
 
 /**
  * Escape cierra la capa más alta, en el mismo orden que el diseño:
- * compartir → modal de autor → cuéntanos más → feedback.
+ * confirmación de reinicio → compartir → modal de autor → cuéntanos más →
+ * feedback.
  */
 function useCerrarConEscape() {
   useEffect(() => {
     const alPulsar = (evento: KeyboardEvent) => {
       if (evento.key !== 'Escape') return;
       const estado = useMatchStore.getState();
-      if (estado.hojaCompartirAbierta) estado.abrirHojaCompartir(false);
+      if (estado.confirmarReinicioAbierta) estado.cerrarConfirmarReinicio();
+      else if (estado.hojaCompartirAbierta) estado.abrirHojaCompartir(false);
       else if (estado.modalAutorId) estado.abrirModalAutor(null);
       else if (estado.hojaExtraAbierta) estado.abrirHojaExtra(false);
       else if (estado.hojaFeedbackAbierta) estado.abrirHojaFeedback(false);
@@ -145,20 +152,26 @@ function useCerrarConEscape() {
 /**
  * Envía la respuesta la primera vez que el match se muestra listo. Es el evento
  * que interesa medir: alguien completó el wizard y vio su resultado.
+ *
+ * La guarda `matchEnviado` es persistente (a diferencia de un `useRef`), para
+ * que re-ver el match cacheado con "Mi último match" —que solo navega a la
+ * pantalla de resultado— NO dispare un `POST` nuevo por la misma sesión.
  */
 function useEnviarAlVerElMatch() {
   const pantalla = useMatchStore((e) => e.pantalla);
   const estadoResultado = useMatchStore((e) => e.estadoResultado);
+  const matchEnviado = useMatchStore((e) => e.matchEnviado);
   const enviarRespuesta = useEnviarRespuesta();
-  const yaEnviado = useRef(false);
 
   useEffect(() => {
-    if (yaEnviado.current) return;
+    if (matchEnviado) return;
     if (pantalla !== 'resultado' || estadoResultado !== 'listo') return;
     if (useMatchStore.getState().resultados.length === 0) return;
-    yaEnviado.current = true;
+    // Se marca ANTES del envío: si la persona vuelve a entrar mientras el fetch
+    // está en curso, no se duplica la fila. El envío es best-effort (§7.5).
+    useMatchStore.getState().fijarMatchEnviado(true);
     void enviarRespuesta({ completado: true, pasoAbandono: null });
-  }, [pantalla, estadoResultado, enviarRespuesta]);
+  }, [pantalla, estadoResultado, matchEnviado, enviarRespuesta]);
 }
 
 /**
@@ -166,29 +179,47 @@ function useEnviarAlVerElMatch() {
  * match, se manda igualmente una fila con `completado = FALSE` y el paso donde
  * lo dejó. Es lo que alimenta el embudo del panel de la fase 3.
  *
- * Se usa `sendBeacon` porque al cerrar la pestaña un `fetch` normal se cancela.
+ * Además, si la persona completó el match y dejó la agenda sin sincronizar
+ * (`agendaSucia`), al cerrar o cambiar de pestaña se manda un `PATCH` para no
+ * perder esos cambios.
  */
 function useRegistrarAbandono() {
   const yaRegistrado = useRef(false);
 
   useEffect(() => {
     const alSalir = () => {
-      if (yaRegistrado.current) return;
       const estado = useMatchStore.getState();
 
-      // Solo interesa quien empezó y no terminó.
+      // 1) Abandono del wizard: empezó y se fue sin llegar al match → POST.
+      // Se usa `sendBeacon` porque al cerrar la pestaña un `fetch` normal se
+      // cancela.
       const empezo = estado.iniciadoEn !== null;
       const enElWizard = estado.pantalla === 'wizard' || estado.pantalla === 'agendaPaso';
-      if (!empezo || !enElWizard) return;
+      if (empezo && enElWizard && !yaRegistrado.current) {
+        yaRegistrado.current = true;
+        const paso = estado.pantalla === 'agendaPaso' ? 8 : estado.paso;
+        const cuerpo = construirCuerpo({ completado: false, pasoAbandono: paso });
 
-      yaRegistrado.current = true;
-      const paso = estado.pantalla === 'agendaPaso' ? 8 : estado.paso;
-      const cuerpo = construirCuerpo({ completado: false, pasoAbandono: paso });
+        navigator.sendBeacon?.(
+          '/api/respuestas',
+          new Blob([JSON.stringify(cuerpo)], { type: 'application/json' }),
+        );
+      }
 
-      navigator.sendBeacon?.(
-        '/api/respuestas',
-        new Blob([JSON.stringify(cuerpo)], { type: 'application/json' }),
-      );
+      // 2) Agenda sucia sin sincronizar → PATCH antes de irse. `sendBeacon` solo
+      // admite POST, así que se usa `fetch` con `keepalive`, que sobrevive al
+      // cierre. Se limpia ANTES de enviar para que el doble disparo del mismo
+      // cierre (`visibilitychange` + `pagehide`) no mande dos PATCH.
+      if (estado.agendaSucia) {
+        const cuerpo = construirCuerpo({ completado: true, pasoAbandono: null });
+        estado.fijarAgendaSucia(false);
+        void fetch(`/api/respuestas/${cuerpo.sessionId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(cuerpo),
+          keepalive: true,
+        }).catch(() => {});
+      }
     };
 
     // `visibilitychange` es el evento fiable en móvil; `pagehide` cubre el
