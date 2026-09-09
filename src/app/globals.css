@@ -179,67 +179,117 @@ button {
   }
 }
 
-@keyframes flmbookL {
+.flm-skeleton {
+  animation: flmpulse 1.1s ease-in-out infinite;
+}
+
+/* ---------------------------------------------------------------------------
+   Piezas animadas de SVG (bienvenida y cálculo del match)
+
+   Todas comparten una regla: **el estilo base del elemento es su estado FINAL**
+   y los fotogramas solo describen cómo se llega hasta él. Así, cuando el sistema
+   pide menos movimiento y las animaciones se apagan, la escena no queda a
+   medias: se ve terminada y quieta.
+
+   `transform-box: fill-box` hace que `transform-origin: center` se resuelva
+   contra la caja del propio elemento SVG y no contra el lienzo entero.
+   --------------------------------------------------------------------------- */
+
+.flm-svg-anim {
+  transform-box: fill-box;
+  transform-origin: center;
+  will-change: transform;
+}
+
+/* --- Bienvenida ----------------------------------------------------------- */
+
+/* Latido real: sístole y diástole (pum-pum) y luego reposo, en vez de un
+   escalado sinusoidal, que se lee como "respiración" y no como corazón. */
+@keyframes flmlatido {
   0%,
+  38%,
   100% {
-    transform: translateX(0) rotate(0);
+    transform: scale(1);
   }
-  45%,
-  60% {
-    transform: translateX(38px) rotate(6deg);
+  8% {
+    transform: scale(1.17);
+  }
+  17% {
+    transform: scale(1);
+  }
+  26% {
+    transform: scale(1.08);
   }
 }
 
-@keyframes flmbookR {
-  0%,
-  100% {
-    transform: translateX(0) rotate(0);
+/* Onda que sale del corazón: el pulso viajando hacia afuera. */
+@keyframes flmonda {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.5;
   }
-  45%,
-  60% {
-    transform: translateX(-38px) rotate(-6deg);
-  }
-}
-
-@keyframes flmheart {
-  0%,
-  35% {
-    transform: scale(0.6);
+  70% {
     opacity: 0;
   }
-  55% {
-    transform: scale(1.18);
+  100% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+
+.flm-latido {
+  animation: flmlatido 2.6s var(--ease-standard) infinite;
+}
+/* Empieza invisible: las que arrancan con retraso no deben verse quietas antes
+   de su turno, y los fotogramas ya fijan la opacidad en todo momento. */
+.flm-onda {
+  animation: flmonda 2.6s ease-out infinite;
+  opacity: 0;
+}
+
+/* --- Cálculo del match ---------------------------------------------------- */
+
+/* Cada puntada del bordado se clava: entra pasada de tamaño y se asienta. */
+@keyframes flmpuntada {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.12);
     opacity: 1;
   }
-  70%,
   100% {
     transform: scale(1);
     opacity: 1;
   }
 }
 
-.flm-pulse {
-  animation: flmpulse 2.2s ease-in-out infinite;
-}
-.flm-skeleton {
-  animation: flmpulse 1.1s ease-in-out infinite;
-}
-.flm-book-l {
-  animation: flmbookL 2.4s var(--ease-standard) infinite;
-}
-.flm-book-r {
-  animation: flmbookR 2.4s var(--ease-standard) infinite;
-}
-.flm-heart {
-  animation: flmheart 2.4s ease-in-out infinite;
+@keyframes flmaroEntra {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
+.flm-puntada {
+  animation: flmpuntada 0.26s var(--ease-standard) both;
+}
+.flm-aro-entra {
+  animation: flmaroEntra 0.45s var(--ease-standard) both;
+}
+
+
 @media (prefers-reduced-motion: reduce) {
-  .flm-pulse,
   .flm-skeleton,
-  .flm-book-l,
-  .flm-book-r,
-  .flm-heart {
+  .flm-latido,
+  .flm-onda,
+  .flm-puntada,
+  .flm-aro-entra {
     animation: none !important;
   }
 }

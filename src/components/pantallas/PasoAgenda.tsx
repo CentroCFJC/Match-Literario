@@ -38,7 +38,7 @@ export function PasoAgenda() {
           ¿Qué días te gustaría o estás dispuesto/a a venir?
         </div>
         <p className="m-0 mb-3 font-body text-[12px] leading-[1.4] text-text-muted">
-          Es solo una previsión para ayudarnos a organizar la feria.
+          Es solo una previsión para ayudarnos a organizar la Feria.
         </p>
         <div className="mb-[26px] flex flex-wrap gap-[10px]" role="group" aria-label="Días">
           {dias.map((fecha) => (

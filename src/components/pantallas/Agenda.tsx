@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
 
+import { IconoAdvertencia, IconoCerrar, IconoFlechaIzquierda } from '@/components/ui/iconos';
 import { useActualizarRespuesta } from '@/hooks/useEnviarRespuesta';
 import { construirAgenda, contarItems, tieneConflictos } from '@/lib/agenda';
 import { useMatchStore } from '@/store/useMatchStore';
@@ -40,9 +41,9 @@ export function Agenda() {
           type="button"
           onClick={volverAlResultado}
           aria-label="Volver a mi match"
-          className="flex h-[38px] w-[38px] flex-shrink-0 items-center justify-center rounded-pill border-none bg-surface-card text-[20px] text-burgundy shadow-card"
+          className="flex h-[38px] w-[38px] flex-shrink-0 items-center justify-center rounded-pill border-none bg-surface-card text-burgundy shadow-card"
         >
-          ←
+          <IconoFlechaIzquierda tamano={20} />
         </button>
         <h2 className="m-0 font-display text-[22px] font-extrabold text-ink">Mi agenda</h2>
       </div>
@@ -57,8 +58,8 @@ export function Agenda() {
                 role="alert"
                 className="mb-[18px] flex items-center gap-[10px] rounded-[14px] border-[1.5px] border-coral-2 bg-[#fbe3c9] px-[14px] py-3"
               >
-                <span className="flex-shrink-0 text-[18px]" aria-hidden="true">
-                  ⚠
+                <span className="flex-shrink-0 text-coral-2">
+                  <IconoAdvertencia tamano={19} />
                 </span>
                 <span className="font-body text-[13px] leading-[1.4] text-burgundy">
                   Tienes actividades que se cruzan en horario. Revisa las marcadas.
@@ -102,7 +103,7 @@ export function Agenda() {
                           </div>
                           {item.conflicto ? (
                             <div className="mt-[6px] inline-flex items-center gap-[5px] font-body text-[11px] font-semibold text-coral-2">
-                              <span aria-hidden="true">⚠</span>
+                              <IconoAdvertencia tamano={13} />
                               Se cruza con otra actividad
                             </div>
                           ) : null}
@@ -111,9 +112,9 @@ export function Agenda() {
                           type="button"
                           onClick={() => quitarActividad(item.id)}
                           aria-label={`Quitar ${item.titulo} de mi agenda`}
-                          className="flex h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-pill border-none bg-cream text-[16px] text-burgundy"
+                          className="flex h-[30px] w-[30px] flex-shrink-0 items-center justify-center rounded-pill border-none bg-cream text-burgundy"
                         >
-                          ×
+                          <IconoCerrar tamano={16} />
                         </button>
                       </motion.div>
                     ))}

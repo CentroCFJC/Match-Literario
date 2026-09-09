@@ -18,7 +18,21 @@ import { Wizard } from '@/components/pantallas/Wizard';
 import { Toast } from '@/components/ui/Toast';
 import { construirCuerpo, useEnviarRespuesta } from '@/hooks/useEnviarRespuesta';
 import { cargarCatalogo } from '@/lib/catalogo';
+import type { Pantalla } from '@/store/useMatchStore';
 import { useMatchStore } from '@/store/useMatchStore';
+
+/**
+ * Fondo de cada pantalla. La bienvenida es la única que se sale del marfil de la
+ * app: llega en amarillo, que es el color con el que la Feria recibe.
+ */
+const FONDOS: Record<Pantalla, string> = {
+  bienvenida: 'bg-yellow',
+  wizard: 'bg-surface-page',
+  agendaPaso: 'bg-surface-page',
+  calculando: 'bg-surface-page',
+  resultado: 'bg-surface-page',
+  agenda: 'bg-surface-page',
+};
 
 /**
  * Raíz de la app: decide qué pantalla se ve, superpone las hojas modales y
@@ -39,18 +53,22 @@ export function AppMatchLiterario() {
   useEnviarAlVerElMatch();
   useRegistrarAbandono();
 
+  const fondo = FONDOS[pantalla];
+
   // Hasta que Zustand no rehidrata desde localStorage no sabemos en qué
-  // pantalla estamos; pintar antes provocaría un salto visible.
+  // pantalla estamos; pintar antes provocaría un salto visible. `pantalla` no se
+  // persiste, así que la app siempre arranca en la bienvenida y el marcador de
+  // posición puede llevar ya su amarillo, sin destello al hidratar.
   if (!hidratado) {
     return (
-      <ContenedorApp>
+      <ContenedorApp fondo={FONDOS.bienvenida}>
         <div className="flex h-full items-center justify-center" aria-hidden="true" />
       </ContenedorApp>
     );
   }
 
   return (
-    <ContenedorApp>
+    <ContenedorApp fondo={fondo}>
       {/*
         Solo animación de entrada, sin `AnimatePresence mode="wait"`: con salida,
         dos cambios de pantalla seguidos podían dejar la transición a medias y la

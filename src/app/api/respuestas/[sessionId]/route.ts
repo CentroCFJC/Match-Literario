@@ -9,12 +9,14 @@
  * Contrato:
  *   200 → { ok: true, timestamp }
  *   400 → { ok: false, error: 'validacion', detalles: [...] }
+ *   501 → { ok: false, error: 'sin-configurar' }  (no hay service account)
  *   502 → { ok: false, error: 'persistencia' }
  */
 
 import { NextResponse } from 'next/server';
 
 import { esquemaRespuesta } from '@/lib/data/esquemas';
+import { avisarSinConfigurar, SheetsSinConfigurar } from '@/lib/data/googleSheets';
 import { updateRespuesta } from '@/lib/data/source';
 import type { RespuestaEntrante } from '@/lib/data/types';
 
@@ -82,6 +84,14 @@ export async function PATCH(
 
     return NextResponse.json({ ok: true, timestamp: guardada.timestamp }, { status: 200 });
   } catch (error) {
+    // Sin service account no hay a dónde escribir. Es el estado normal en local
+    // y una mala configuración en producción, pero en ninguno de los dos casos
+    // es un fallo de la petición: se avisa una vez y se devuelve un 501, que el
+    // cliente registra como aviso y no como error.
+    if (error instanceof SheetsSinConfigurar) {
+      avisarSinConfigurar();
+      return NextResponse.json({ ok: false, error: 'sin-configurar' }, { status: 501 });
+    }
     console.error('[PATCH /api/respuestas] no se pudo actualizar la respuesta:', error);
     return NextResponse.json({ ok: false, error: 'persistencia' }, { status: 502 });
   }

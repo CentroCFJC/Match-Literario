@@ -33,6 +33,7 @@ import type {
   Publico,
   Tematica,
   TipoActividad,
+  VisitaPrevia,
   Voz,
   VozWizard,
 } from '@/lib/vocabulario';
@@ -168,7 +169,7 @@ export type FeedbackUtil = 1 | 0 | null;
 /**
  * Una fila de `Respuestas`: una sesión.
  *
- * Encabezados de la fila 2, en su orden real (27 columnas, A..AA):
+ * Encabezados de la fila 2, en su orden real (28 columnas, A..AB):
  *
  *   timestamp | session_id | dispositivo | edad | generos_sel | tematicas_sel |
  *   mood_sel | estilo_sel | voces_sel | actividades_interes_sel |
@@ -176,7 +177,8 @@ export type FeedbackUtil = 1 | 0 | null;
  *   donde_consigue_libros | como_se_entero | match_top_ids |
  *   autores_click_ids | autores_ruta_ids | n_autores_ruta |
  *   conflictos_detectados | feedback_util | autor_faltante |
- *   tema_faltante | tiempo_total_seg | paso_abandono | completado | version_app
+ *   tema_faltante | tiempo_total_seg | paso_abandono | completado |
+ *   version_app | visita_previa
  *
  * OJO: este orden NO es el del prompt maestro §7.4 (allí `origen_visitante` va
  * cuarto). Manda la hoja real.
@@ -221,6 +223,8 @@ export interface Respuesta {
   dondeConsigueLibros: DondeLibros[];
   /** columna `como_se_entero`. */
   comoSeEntero: ComoSeEntero[];
+  /** columna `visita_previa` — si ya había venido antes a la Feria. */
+  visitaPrevia: VisitaPrevia | null;
 
   // --- Telemetría implícita (§7.5) ----------------------------------------
   /** columna `match_top_ids` — ids de los autores que se le mostraron, en orden. */

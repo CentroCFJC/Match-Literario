@@ -21,6 +21,46 @@ export type SheetsClient = sheets_v4.Sheets;
 let cliente: SheetsClient | null = null;
 
 /**
+ * Error de "todavía no hay nada que configurar", distinto de un fallo de red o
+ * de cuota.
+ *
+ * Se separa porque las dos situaciones piden respuestas opuestas: un fallo de
+ * Sheets hay que reintentarlo y gritarlo, mientras que la falta de credenciales
+ * no se arregla reintentando —es el estado normal de un `npm run dev` sin
+ * `.env`— y no debe aparecer como un error rojo en la consola de quien está
+ * trabajando en la interfaz.
+ */
+export class SheetsSinConfigurar extends Error {
+  constructor() {
+    super('[googleSheets] sin credenciales: falta GOOGLE_SERVICE_ACCOUNT_EMAIL o GOOGLE_PRIVATE_KEY.');
+    this.name = 'SheetsSinConfigurar';
+  }
+}
+
+/** `true` si la service account está definida y se puede escribir en la hoja. */
+export function haySheets(): boolean {
+  return Boolean(process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL && process.env.GOOGLE_PRIVATE_KEY);
+}
+
+let yaAvisado = false;
+
+/**
+ * Avisa UNA sola vez por proceso de que no hay credenciales.
+ *
+ * Una vez y no en cada petición: el wizard escribe varias veces por sesión, y
+ * repetir el mismo aviso acaba tapando los errores que sí importan.
+ */
+export function avisarSinConfigurar(): void {
+  if (yaAvisado) return;
+  yaAvisado = true;
+  console.warn(
+    '[data] Google Sheets no está configurado: las respuestas NO se están guardando. ' +
+      'Define GOOGLE_SERVICE_ACCOUNT_EMAIL, GOOGLE_PRIVATE_KEY y SHEET_RESPUESTAS_ID en .env ' +
+      '(ver .env.example). La app sigue funcionando: el match y la agenda no dependen de esto.',
+  );
+}
+
+/**
  * Devuelve (y cachea) el cliente de Sheets autenticado con la service account.
  *
  * Lanza si faltan las credenciales: la ruta que llama lo traduce a un 502 y el
@@ -32,11 +72,7 @@ export function getSheets(): SheetsClient {
   const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
   const clave = process.env.GOOGLE_PRIVATE_KEY;
 
-  if (!email || !clave) {
-    throw new Error(
-      '[googleSheets] faltan credenciales: define GOOGLE_SERVICE_ACCOUNT_EMAIL y GOOGLE_PRIVATE_KEY.',
-    );
-  }
+  if (!email || !clave) throw new SheetsSinConfigurar();
 
   const auth = new google.auth.JWT({
     email,
@@ -62,6 +98,10 @@ export async function conReintento<T>(fn: () => Promise<T>, intentos = 3): Promi
     try {
       return await fn();
     } catch (error) {
+      // Sin credenciales no hay nada que reintentar: esperar 3,5s para volver a
+      // comprobar una variable de entorno que no va a aparecer solo alarga la
+      // petición (llegó a tardar 11s antes de contestar).
+      if (error instanceof SheetsSinConfigurar) throw error;
       ultimoError = error;
       if (i < intentos - 1) {
         await new Promise((resolve) => setTimeout(resolve, 2 ** i * 500));

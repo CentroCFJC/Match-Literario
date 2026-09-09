@@ -1,6 +1,7 @@
 'use client';
 
 import { HojaInferior } from '@/components/ui/HojaInferior';
+import { IconoAdvertencia } from '@/components/ui/iconos';
 import { useMatchStore } from '@/store/useMatchStore';
 
 /**
@@ -28,8 +29,8 @@ export function HojaConfirmarReinicio() {
       etiqueta="Reiniciar el test"
     >
       <div className="px-6 pb-[26px] pt-[22px] text-center">
-        <div className="mb-3 text-[40px]" aria-hidden="true">
-          ⚠
+        <div className="mb-3 flex justify-center text-coral-2">
+          <IconoAdvertencia tamano={42} />
         </div>
         <h2 className="m-0 mb-3 text-balance font-display text-[21px] font-extrabold text-ink">
           ¿Reiniciar el test?

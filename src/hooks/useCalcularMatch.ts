@@ -6,8 +6,16 @@ import { cargarCatalogo } from '@/lib/catalogo';
 import { aPerfilesAutores, calcularMatch } from '@/lib/match';
 import { useMatchStore } from '@/store/useMatchStore';
 
-/** Tiempo mínimo en "Calculando tu match…", para que la animación se lea (§5). */
-const MINIMO_CALCULANDO_MS = 1500;
+/**
+ * Tiempo mínimo en "Calculando tu match…", para que la animación se lea (§5).
+ *
+ * La escena cuenta algo (los peces salen del libro, se encuentran y escriben el
+ * corazón, que late) y su desenlace cae en el segundo 2,1. Con los 1,5s de antes
+ * la pantalla se iba justo cuando aparecía el corazón y casi nadie llegaba a
+ * verlo. Si se toca este número, hay que revisar los retrasos de
+ * `Calculando.tsx` y de las clases `flm-*` de `globals.css`.
+ */
+const MINIMO_CALCULANDO_MS = 2200;
 /** Tiempo del esqueleto antes de mostrar el resultado, como en el diseño. */
 const ESQUELETO_MS = 700;
 

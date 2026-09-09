@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 
+import { IconoFlechaIzquierda } from '@/components/ui/iconos';
 import { TOTAL_PASOS } from '@/lib/pasos';
 
 /**
@@ -26,9 +27,9 @@ export function CabeceraPaso({ numero, titulo, ayuda, onVolver }: CabeceraPasoPr
           type="button"
           onClick={onVolver}
           aria-label="Volver al paso anterior"
-          className="flex h-[38px] w-[38px] flex-shrink-0 items-center justify-center rounded-pill border-none bg-surface-card text-[20px] text-burgundy shadow-card"
+          className="flex h-[38px] w-[38px] flex-shrink-0 items-center justify-center rounded-pill border-none bg-surface-card text-burgundy shadow-card"
         >
-          ←
+          <IconoFlechaIzquierda tamano={20} />
         </button>
         <div
           className="h-[6px] flex-1 overflow-hidden rounded-pill bg-cream"

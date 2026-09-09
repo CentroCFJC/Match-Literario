@@ -122,7 +122,7 @@ export const VOCES_WIZARD = [...VOCES, 'Me da igual, sorpréndeme'] as const;
 export const VOCES_WILDCARD = 'Me da igual, sorpréndeme';
 
 /** Paso 6. Se guarda tal cual en la columna `edad` de `Respuestas`. */
-export const EDADES = ['13-17', '18-25', '26-40', '41-60', '60+'] as const;
+export const EDADES = ['6-17', '18-28', '29-40', '40-60', '60+'] as const;
 
 /**
  * Paso 8. La hoja no tiene franjas: se derivan de `hora_inicio`.
@@ -148,6 +148,9 @@ export const DONDE_LIBROS = [
   'Prestados/usados',
   'Digital',
 ] as const;
+
+/** Columna `visita_previa` de `Respuestas`: si ya había venido a la Feria. */
+export const VISITA_PREVIA = ['Sí', 'No'] as const;
 
 /** Columna `como_se_entero` de `Respuestas`. */
 export const COMO_SE_ENTERO = [
@@ -177,6 +180,7 @@ export type Franja = (typeof FRANJAS)[number];
 export type OrigenVisitante = (typeof ORIGENES_VISITANTE)[number];
 export type DondeLibros = (typeof DONDE_LIBROS)[number];
 export type ComoSeEntero = (typeof COMO_SE_ENTERO)[number];
+export type VisitaPrevia = (typeof VISITA_PREVIA)[number];
 
 /** Fecha en `YYYY-MM-DD`, tal como viene en la columna `fecha` de `Actividades`. */
 export type FechaISO = string;
@@ -192,10 +196,12 @@ export type FechaISO = string;
  * Este mapa es el puente. Viene del prompt maestro §5.6.
  */
 export const EDAD_A_PUBLICO: Record<Edad, Publico> = {
-  '13-17': 'Juvenil',
-  '18-25': 'Adulto joven',
-  '26-40': 'Adulto',
-  '41-60': 'Adulto',
+  // El rango abarca Infantil y Juvenil; se mapea a Juvenil, que queda a
+  // distancia 1 de Infantil y por tanto no lo excluye del match.
+  '6-17': 'Juvenil',
+  '18-28': 'Adulto joven',
+  '29-40': 'Adulto',
+  '40-60': 'Adulto',
   '60+': 'Adulto',
 };
 
@@ -256,6 +262,7 @@ const INDICES = {
   origenVisitante: construirIndice(ORIGENES_VISITANTE),
   dondeLibros: construirIndice(DONDE_LIBROS),
   comoSeEntero: construirIndice(COMO_SE_ENTERO),
+  visitaPrevia: construirIndice(VISITA_PREVIA),
 } as const;
 
 export type CategoriaVocabulario = keyof typeof INDICES;

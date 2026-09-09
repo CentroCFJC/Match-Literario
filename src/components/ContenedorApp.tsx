@@ -17,12 +17,19 @@ import type { ReactNode } from 'react';
 
 interface ContenedorAppProps {
   children: ReactNode;
+  /**
+   * Clase de fondo de la pantalla actual. Sigue decidiéndose en un solo sitio
+   * —la tabla de `AppMatchLiterario`—, y aquí se aplica al lienzo entero para
+   * que el color llegue a sangre también en escritorio, y no quede la columna
+   * de 448px flotando sobre un fondo distinto.
+   */
+  fondo?: string;
 }
 
-export function ContenedorApp({ children }: ContenedorAppProps) {
+export function ContenedorApp({ children, fondo = 'bg-surface-page' }: ContenedorAppProps) {
   return (
     // El fondo de la app, a sangre en todo el viewport.
-    <div className="min-alto-pantalla flex w-full justify-center bg-surface-page">
+    <div className={`min-alto-pantalla flex w-full justify-center ${fondo}`}>
       {/*
         `relative` ancla las hojas modales y el toast.
         `overflow-hidden` recorta la hoja mientras entra desde abajo.

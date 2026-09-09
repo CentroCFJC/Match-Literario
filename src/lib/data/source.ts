@@ -67,10 +67,10 @@ export const RANGOS = {
   autores: 'Autores!A4:R',
   /** Lectura: 10 columnas, A..J, desde la fila 3. */
   actividades: 'Actividades!A3:J',
-  /** Escritura (append): 27 columnas, A..AA. */
-  respuestas: 'Respuestas!A:AA',
-  /** Lectura para localizar la fila a actualizar: 27 columnas, datos desde la fila 4. */
-  respuestasDatos: 'Respuestas!A4:AA',
+  /** Escritura (append): 28 columnas, A..AB. */
+  respuestas: 'Respuestas!A:AB',
+  /** Lectura para localizar la fila a actualizar: 28 columnas, datos desde la fila 4. */
+  respuestasDatos: 'Respuestas!A4:AB',
 } as const;
 
 /** Primera fila con datos reales en la pestaña `Respuestas` (ver geometría arriba). */
@@ -231,7 +231,7 @@ export async function updateRespuesta(
   await conReintento(() =>
     getSheets().spreadsheets.values.update({
       spreadsheetId: idRespuestas(),
-      range: `Respuestas!A${filaHoja}:AA${filaHoja}`,
+      range: `Respuestas!A${filaHoja}:AB${filaHoja}`,
       valueInputOption: 'RAW',
       requestBody: { values: [fusionada] },
     }),
@@ -277,7 +277,7 @@ function idRespuestas(): string {
   return id;
 }
 
-/** Extrae el número de fila de un rango A1 tipo "Respuestas!A5:AA5" → 5. */
+/** Extrae el número de fila de un rango A1 tipo "Respuestas!A5:AB5" → 5. */
 function filaDesdeRango(rango?: string | null): number | null {
   if (!rango) return null;
   const match = rango.match(/!([A-Z]+)(\d+)/);

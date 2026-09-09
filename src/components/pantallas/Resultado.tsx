@@ -6,6 +6,13 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 
 import { BotonPrincipal } from '@/components/ui/BotonPrincipal';
+import {
+  IconoAdvertencia,
+  IconoCheck,
+  IconoFlechaDerecha,
+  IconoMas,
+  IconoReiniciar,
+} from '@/components/ui/iconos';
 import { useCalcularMatch } from '@/hooks/useCalcularMatch';
 import { useActualizarRespuesta } from '@/hooks/useEnviarRespuesta';
 import { chipsAutor, colorAvatar, iniciales, textoOrigen } from '@/lib/autores';
@@ -29,8 +36,8 @@ function ResultadoError() {
   const calcular = useCalcularMatch();
   return (
     <div className="flex h-full flex-col items-center justify-center px-11 text-center">
-      <div className="mb-[14px] text-[44px]" aria-hidden="true">
-        ⚠
+      <div className="mb-[14px] text-coral-2">
+        <IconoAdvertencia tamano={46} />
       </div>
       <h2 className="m-0 mb-2 font-display text-[22px] font-extrabold text-burgundy">
         No pudimos cargar los autores
@@ -148,7 +155,7 @@ function ResultadoListo() {
           <div className="flex flex-col gap-[10px]">
             <TarjetaEnlace
               titulo="Cuéntanos más"
-              subtitulo="Dos preguntas para mejorar la feria · opcional"
+              subtitulo="Cuatro preguntas para mejorar la Feria · opcional"
               onClick={() => abrirHojaExtra(true)}
             />
             <TarjetaEnlace
@@ -165,9 +172,7 @@ function ResultadoListo() {
             onClick={() => (agenda.length > 0 ? pedirReinicio(false) : reiniciar())}
             className="inline-flex items-center gap-[7px] border-none bg-transparent font-display text-[14px] font-bold text-magenta"
           >
-            <span className="text-[16px]" aria-hidden="true">
-              ↻
-            </span>
+            <IconoReiniciar tamano={16} />
             Reiniciar el test
           </button>
         </div>
@@ -207,7 +212,7 @@ interface Par {
   autor: Autor;
 }
 
-/** Cabecera burdeos con el autor más afín dentro del marco ilustrado. */
+/** Cabecera burdeos con el match principal dentro del marco ilustrado. */
 function CabeceraDestacado({ par }: { par: Par }) {
   const { autor, resultado } = par;
   const abrirModalAutor = useMatchStore((e) => e.abrirModalAutor);
@@ -216,7 +221,7 @@ function CabeceraDestacado({ par }: { par: Par }) {
   return (
     <div className="relative bg-burgundy px-[26px] pb-[30px] pt-[26px] text-center">
       <div className="mb-4 font-body text-[13px] tracking-[.04em] text-pink-light">
-        Tu autor/a más afín
+        Tu match ideal es
       </div>
 
       <div className="relative mx-auto mb-4 h-[212px] w-[196px]">
@@ -263,8 +268,15 @@ function CabeceraDestacado({ par }: { par: Par }) {
       <div className="mb-4 font-body text-[13px] text-pink-light">{textoOrigen(autor)}</div>
 
       {autor.bioCorta ? (
-        <p className="m-0 mb-[18px] text-pretty font-body text-[14px] leading-[1.5] text-cream-white">
+        <p className="m-0 mb-[14px] text-pretty font-body text-[14px] leading-[1.5] text-cream-white">
           {autor.bioCorta}
+        </p>
+      ) : null}
+
+      {autor.libroDestacado ? (
+        <p className="m-0 mb-[18px] font-body text-[13px] text-pink-light">
+          Libro destacado:{' '}
+          <span className="font-script text-[16px] italic text-yellow">{autor.libroDestacado}</span>
         </p>
       ) : null}
 
@@ -296,9 +308,7 @@ function CabeceraDestacado({ par }: { par: Par }) {
             color: anadido ? 'var(--color-burgundy)' : 'var(--color-cream-white)',
           }}
         >
-          <span className="text-[19px] font-extrabold leading-none" aria-hidden="true">
-            {anadido ? '✓' : '+'}
-          </span>
+          {anadido ? <IconoCheck tamano={18} /> : <IconoMas tamano={18} />}
           {anadido ? 'Añadido' : 'Añadir a mi agenda'}
         </button>
       </div>
@@ -385,10 +395,10 @@ function TarjetaAutor({ par, compacta = false }: { par: Par; compacta?: boolean 
         aria-label={
           anadido ? `Quitar a ${autor.nombreVisible} de mi agenda` : `Añadir a ${autor.nombreVisible} a mi agenda`
         }
-        className="flex h-[38px] w-[38px] flex-shrink-0 items-center justify-center rounded-pill border-none font-display text-[19px] font-extrabold text-cream-white transition-colors duration-150"
+        className="flex h-[38px] w-[38px] flex-shrink-0 items-center justify-center rounded-pill border-none text-cream-white transition-colors duration-150"
         style={{ background: anadido ? 'var(--color-burgundy)' : 'var(--color-magenta)' }}
       >
-        {anadido ? '✓' : '+'}
+        {anadido ? <IconoCheck tamano={19} /> : <IconoMas tamano={19} />}
       </button>
     </div>
   );
@@ -426,8 +436,8 @@ function TarjetaEnlace({
         <span className="block font-display text-[15px] font-bold text-burgundy">{titulo}</span>
         <span className="font-body text-[12px] text-text-muted">{subtitulo}</span>
       </span>
-      <span className="text-[20px] text-burgundy" aria-hidden="true">
-        →
+      <span className="flex-shrink-0 text-burgundy">
+        <IconoFlechaDerecha tamano={20} />
       </span>
     </button>
   );

@@ -32,7 +32,7 @@ const LECTORA: PerfilLector = {
   tematicas: ['Feminismos y género', 'Historia y memoria'],
   estilo: 'Accesible',
   voces: ['Autoras mujeres', 'Voces locales (Caldas/Manizales)'],
-  edad: '26-40',
+  edad: '29-40',
   actividades: ['Conversatorios'],
   dias: ['2026-10-20', '2026-10-21'],
   franjas: ['Tarde'],

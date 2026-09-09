@@ -22,7 +22,7 @@ export function HojaCompartir() {
           Compartir mi agenda
         </h2>
         <p className="m-0 mb-[22px] text-center font-body text-[13px] text-text-muted">
-          Envía tu ruta por la feria a quien quieras.
+          Envía tu ruta por la Feria a quien quieras.
         </p>
 
         <div className="flex flex-col gap-3">

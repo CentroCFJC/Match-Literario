@@ -135,7 +135,7 @@ export const PASOS: Paso[] = [
   {
     num: 7,
     clave: 'actividades',
-    titulo: '¿Qué te interesa de la feria?',
+    titulo: '¿Qué te interesa de la Feria?',
     opciones: comoTexto(TIPOS_ACTIVIDAD),
     unica: false,
     max: 4,
