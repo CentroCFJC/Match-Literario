@@ -102,7 +102,7 @@ export function Bienvenida() {
             Tus respuestas son anónimas y se usan solo con fines estadísticos.
           </p>
           <p className="m-0 mt-2 text-center font-body text-[11px] leading-[1.4] text-text-muted opacity-70">
-            Un proyecto del Centro de Ciencia Francisco José de Caldas
+            Desarrollado por el Centro de Ciencia Francisco José de Caldas
           </p>
         </div>
       </div>
