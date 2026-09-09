@@ -122,7 +122,7 @@ export const VOCES_WIZARD = [...VOCES, 'Me da igual, sorpréndeme'] as const;
 export const VOCES_WILDCARD = 'Me da igual, sorpréndeme';
 
 /** Paso 6. Se guarda tal cual en la columna `edad` de `Respuestas`. */
-export const EDADES = ['6-17', '18-28', '29-40', '40-60', '60+'] as const;
+export const EDADES = ['6-17', '18-28', '29-40', '41-60', '60+'] as const;
 
 /**
  * Paso 8. La hoja no tiene franjas: se derivan de `hora_inicio`.
@@ -201,7 +201,7 @@ export const EDAD_A_PUBLICO: Record<Edad, Publico> = {
   '6-17': 'Juvenil',
   '18-28': 'Adulto joven',
   '29-40': 'Adulto',
-  '40-60': 'Adulto',
+  '41-60': 'Adulto',
   '60+': 'Adulto',
 };
 

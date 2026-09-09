@@ -300,7 +300,7 @@ describe('calcularMatch', () => {
       generos: ['Ensayo'],
       tematicas: ['Ciencia y tecnología'],
       estilo: 'Académico',
-      edad: '40-60',
+      edad: '41-60',
     };
     expect(calcularMatch(cientifico, PERFILES)[0].autorId).not.toBe('AUT001');
   });
