@@ -23,6 +23,7 @@ import {
   ORIGENES_VISITANTE,
   TEMATICAS,
   TIPOS_ACTIVIDAD,
+  VISITA_PREVIA,
   VOCES_WIZARD,
 } from '@/lib/vocabulario';
 
@@ -64,6 +65,7 @@ export const esquemaRespuesta = z.object({
   origenVisitante: deVocabulario(ORIGENES_VISITANTE).nullable().default(null),
   dondeConsigueLibros: lista(deVocabulario(DONDE_LIBROS), DONDE_LIBROS.length).default([]),
   comoSeEntero: lista(deVocabulario(COMO_SE_ENTERO), COMO_SE_ENTERO.length).default([]),
+  visitaPrevia: deVocabulario(VISITA_PREVIA).nullable().default(null),
 
   // --- Telemetría implícita ------------------------------------------------
   matchTopIds: z.array(zId).max(50).default([]),

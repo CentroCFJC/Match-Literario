@@ -2,6 +2,7 @@
 
 import { Chip } from '@/components/ui/Chip';
 import { HojaInferior, ManijaHoja } from '@/components/ui/HojaInferior';
+import { IconoPulgar } from '@/components/ui/iconos';
 import { useActualizarRespuesta } from '@/hooks/useEnviarRespuesta';
 import { TEMATICAS } from '@/lib/vocabulario';
 import { useMatchStore } from '@/store/useMatchStore';
@@ -31,6 +32,7 @@ export function HojaFeedback() {
   const estiloPulgar = (activo: boolean, fondo: string) => ({
     border: activo ? '3px solid var(--color-burgundy)' : '2px solid var(--border-soft)',
     background: activo ? fondo : 'var(--surface-card)',
+    color: activo ? 'var(--color-burgundy)' : 'var(--text-muted)',
   });
 
   return (
@@ -47,20 +49,20 @@ export function HojaFeedback() {
             aria-label="Sí, me sirvió"
             aria-pressed={feedback.util === 1}
             onClick={() => fijarFeedback({ util: feedback.util === 1 ? null : 1 })}
-            className="h-[72px] w-[72px] rounded-[20px] text-[32px] transition-all duration-150"
+            className="flex h-[72px] w-[72px] items-center justify-center rounded-[20px] transition-all duration-150"
             style={estiloPulgar(feedback.util === 1, 'var(--color-yellow)')}
           >
-            👍
+            <IconoPulgar direccion="arriba" tamano={32} />
           </button>
           <button
             type="button"
             aria-label="No me sirvió"
             aria-pressed={feedback.util === 0}
             onClick={() => fijarFeedback({ util: feedback.util === 0 ? null : 0 })}
-            className="h-[72px] w-[72px] rounded-[20px] text-[32px] transition-all duration-150"
+            className="flex h-[72px] w-[72px] items-center justify-center rounded-[20px] transition-all duration-150"
             style={estiloPulgar(feedback.util === 0, 'var(--color-pink-light)')}
           >
-            👎
+            <IconoPulgar direccion="abajo" tamano={32} />
           </button>
         </div>
 

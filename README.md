@@ -5,7 +5,7 @@ sobre lo que te gusta leer y te arma una ruta a tu medida por la feria: autores
 afines y una agenda con sus actividades.
 
 
-> necesitas nada de este archivo.
+> No necesitas nada más que esto para arrancar el proyecto.
 
 Repo: https://github.com/CentroCFJC/Match-Literario
 
@@ -46,9 +46,12 @@ src/
     ContenedorApp.tsx           ancho y alto de la superficie (layout compartido)
     pantallas/                  Bienvenida, Wizard, PasoAgenda, Calculando,
                                 Resultado, Agenda
-    hojas/                      ModalAutor, CuentanosMas, Feedback, Compartir
+    hojas/                      ModalAutor, HojaCuentanosMas, HojaFeedback,
+                                HojaCompartir, HojaConfirmarReinicio
     ui/                         Chip, OpcionTarjeta, BotonPrincipal,
-                                CabeceraPaso, HojaInferior, Toast
+                                CabeceraPaso, HojaInferior, Toast,
+                                iconos.tsx (todo icono de la UI: nada de
+                                emoji ni glifos tipográficos, ver abajo)
   hooks/
     useCalcularMatch.ts         Calculando → esqueleto → resultado
     useEnviarRespuesta.ts       POST /api/respuestas
@@ -136,6 +139,22 @@ expuestos a Tailwind en `tailwind.config.ts` (`bg-magenta`, `text-burgundy`,
 Las tipografías (Fivo Sans Modern, Myriad Pro y Freight Text Pro) están en
 `public/fonts/`, y las reglas `@font-face` de `globals.css` las toman de ahí.
 
+**Nunca uses emoji ni símbolos tipográficos decorativos** (`⚠ ✓ × ← → ↻ ❤`,
+etc.) en la interfaz: cada plataforma los pinta distinto (el caso real que lo
+disparó fue un `❤` saliendo como el glifo a todo color de Apple en iOS). Todo
+icono vive como SVG en `src/components/ui/iconos.tsx`, heredando el color del
+texto vía `currentColor`.
+
+Los recursos gráficos de `public/*.webp` (edificios, flor, aro de bordado) son
+recortes optimizados de los grabados originales en `Nativos/` (identidad
+visual de la 17ª Feria — vintage, correspondencia, bordado). Se procesan con
+`sharp` (ya en `node_modules`): para convertir un grabado con textura en una
+silueta plana de un solo color, se extrae su canal alfa y se rellena con el
+color de marca, descartando el sombreado interno — funciona bien cuando el
+alfa original sigue el dibujo fino (huecos entre trazos), no cuando el
+recorte es un bloque macizo. Ver §10 de `HANDOFF.md` para el detalle completo
+y qué recursos sí sirven para esto.
+
 ## Fuente de verdad de los datos
 
 El esquema del proyecto está calcado de los dos Google Sheets reales, cuya copia
@@ -144,7 +163,7 @@ está en `sheets/`:
 - **"Base Autores"** — pestañas `Autores` (18 columnas), `Actividades` (10) y
   `Vocabulario`. La app solo lee. Los días de la feria **se derivan** de
   `Actividades.fecha`; no hay fechas codificadas.
-- **"Respuestas Match"** — pestaña `Respuestas` (27 columnas). La app solo
+- **"Respuestas Match"** — pestaña `Respuestas` (28 columnas). La app solo
   escribe: `POST` crea una fila por sesión y `PATCH /api/respuestas/[sessionId]`
   la actualiza (upsert por `session_id`). Ya no existe la pestaña `Feedback`; el
   feedback vive en las columnas 21-23 de `Respuestas`.
@@ -156,13 +175,21 @@ copiadas de esos archivos.
 
 ## Fases del proyecto
 
-1. **Frontend y arquitectura** — hecho. 125 tests en verde, probado en
+1. **Frontend y arquitectura** — hecho. 126 tests en verde, probado en
    escritorio y en celular por red local.
 2. **Conexión con Google Sheets** — ver [`HANDOFF.md`](./HANDOFF.md). La
    **escritura** ya es real (`saveRespuesta` + `updateRespuesta`); solo falta
    conectar la **lectura** (`getAutores` / `getActividades`) cuando la base de
    autores esté lista.
+2.5. **Ajustes de UI del test con usuarios** (9 sep 2026, rama
+   `feat/ui-test-usuarios`) — siete ajustes de texto/datos, rediseño completo
+   de la bienvenida y la pantalla de cálculo con la identidad visual de la
+   Feria, y eliminación de emoji de toda la interfaz. Detalle completo en
+   §10 de [`HANDOFF.md`](./HANDOFF.md#10-ajustes-del-test-con-usuarios-9-sep-2026).
+   Deja dos pendientes fuera del código para quien administre las hojas:
+   crear el encabezado `visita_previa` en `Respuestas!AB2`, y revisar si hay
+   que actualizar un desplegable de rangos etarios en `Base Autores`.
 3. **Panel de administración y despliegue** — pendiente, tercera persona.
 
 Cada persona trabaja en su propia rama y abre PR contra `main`; así se evita
-que la fase 2 y la fase 3 se pisen mientras ambas están en curso.
+que las fases se pisen mientras están en curso.

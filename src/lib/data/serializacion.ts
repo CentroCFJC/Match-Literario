@@ -18,7 +18,7 @@ const lista = (valores: readonly string[]) => valores.join('; ');
 const booleano = (valor: boolean) => (valor ? 'TRUE' : 'FALSE');
 
 /**
- * Serializa una `Respuesta` a las 27 celdas de la fila, EN EL ORDEN EXACTO de
+ * Serializa una `Respuesta` a las 28 celdas de la fila, EN EL ORDEN EXACTO de
  * los encabezados de la hoja. Pásalo tal cual a `values.append`.
  */
 export function aFilaRespuestas(respuesta: Respuesta): string[] {
@@ -50,6 +50,7 @@ export function aFilaRespuestas(respuesta: Respuesta): string[] {
     respuesta.pasoAbandono === null ? '' : String(respuesta.pasoAbandono),
     booleano(respuesta.completado),
     respuesta.versionApp,
+    respuesta.visitaPrevia ?? '',
   ];
 }
 
@@ -58,6 +59,10 @@ export function aFilaRespuestas(respuesta: Respuesta): string[] {
  *
  * OJO: este orden NO es el del prompt maestro §7.4 (allí `origen_visitante` va
  * cuarto). Manda la hoja real.
+ *
+ * `visita_previa` se añadió después, y por eso va al final y no junto a las
+ * demás preguntas opcionales: insertarla en medio desalinearía las filas que la
+ * hoja ya tiene escritas.
  */
 export const ENCABEZADOS_RESPUESTAS = [
   'timestamp',
@@ -87,6 +92,7 @@ export const ENCABEZADOS_RESPUESTAS = [
   'paso_abandono',
   'completado',
   'version_app',
+  'visita_previa',
 ] as const;
 
 /**

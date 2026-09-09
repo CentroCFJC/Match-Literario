@@ -27,6 +27,7 @@ import type {
   OrigenVisitante,
   Tematica,
   TipoActividad,
+  VisitaPrevia,
   VozWizard,
 } from '@/lib/vocabulario';
 
@@ -58,6 +59,7 @@ export interface SeleccionWizard {
 
 /** Respuestas de la hoja opcional "Cuéntanos más". */
 export interface DatosExtra {
+  visitaPrevia: VisitaPrevia | null;
   origenVisitante: OrigenVisitante | null;
   dondeConsigueLibros: DondeLibros[];
   comoSeEntero: ComoSeEntero[];
@@ -83,6 +85,7 @@ const SELECCION_VACIA: SeleccionWizard = {
 };
 
 const EXTRA_VACIO: DatosExtra = {
+  visitaPrevia: null,
   origenVisitante: null,
   dondeConsigueLibros: [],
   comoSeEntero: [],

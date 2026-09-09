@@ -29,7 +29,7 @@ const LECTORA: PerfilLector = {
   tematicas: ['Feminismos y género', 'Historia y memoria'],
   estilo: 'Accesible',
   voces: ['Autoras mujeres', 'Voces locales (Caldas/Manizales)'],
-  edad: '26-40',
+  edad: '29-40',
   actividades: ['Conversatorios'],
   dias: ['2026-10-20', '2026-10-21'],
   franjas: ['Tarde'],
@@ -64,19 +64,19 @@ describe('cosenoBinario', () => {
 
 describe('afinidadPublico', () => {
   it('vale 1 cuando la edad cae en el público del autor', () => {
-    // 26-40 → "Adulto"
-    expect(afinidadPublico('26-40', ['Adulto'])).toBe(1);
+    // 29-40 → "Adulto"
+    expect(afinidadPublico('29-40', ['Adulto'])).toBe(1);
   });
 
   it('baja con la distancia entre públicos', () => {
-    const cerca = afinidadPublico('26-40', ['Adulto joven']);
-    const lejos = afinidadPublico('26-40', ['Infantil']);
+    const cerca = afinidadPublico('29-40', ['Adulto joven']);
+    const lejos = afinidadPublico('29-40', ['Infantil']);
     expect(cerca).toBeGreaterThan(lejos);
   });
 
   it('es 0 si falta el dato de cualquiera de los dos lados', () => {
     expect(afinidadPublico(null, ['Adulto'])).toBe(0);
-    expect(afinidadPublico('26-40', [])).toBe(0);
+    expect(afinidadPublico('29-40', [])).toBe(0);
   });
 });
 

@@ -9,12 +9,14 @@
  * Contrato:
  *   201 → { ok: true, timestamp }
  *   400 → { ok: false, error: 'validacion', detalles: [...] }
+ *   501 → { ok: false, error: 'sin-configurar' }  (no hay service account)
  *   502 → { ok: false, error: 'persistencia' }
  */
 
 import { NextResponse } from 'next/server';
 
 import { esquemaRespuesta } from '@/lib/data/esquemas';
+import { avisarSinConfigurar, SheetsSinConfigurar } from '@/lib/data/googleSheets';
 import { saveRespuesta } from '@/lib/data/source';
 import type { RespuestaEntrante } from '@/lib/data/types';
 
@@ -56,6 +58,12 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ok: true, timestamp: guardada.timestamp }, { status: 201 });
   } catch (error) {
+    // Ver la nota equivalente en `[sessionId]/route.ts`: la falta de service
+    // account no es un fallo de esta petición.
+    if (error instanceof SheetsSinConfigurar) {
+      avisarSinConfigurar();
+      return NextResponse.json({ ok: false, error: 'sin-configurar' }, { status: 501 });
+    }
     console.error('[POST /api/respuestas] no se pudo guardar la respuesta:', error);
     return NextResponse.json({ ok: false, error: 'persistencia' }, { status: 502 });
   }

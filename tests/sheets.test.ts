@@ -283,7 +283,7 @@ const RESPUESTA: Respuesta = {
   timestamp: '2026-08-31T15:00:00.000Z',
   sessionId: '11111111-2222-4333-8444-555555555555',
   dispositivo: 'movil',
-  edad: '26-40',
+  edad: '29-40',
   generosSel: ['Novela', 'Poesía'],
   tematicasSel: ['Historia y memoria'],
   moodSel: ['Emocionarme'],
@@ -292,6 +292,7 @@ const RESPUESTA: Respuesta = {
   actividadesInteresSel: ['Conversatorios'],
   diasAsistenciaSel: ['2026-08-31', '2026-09-01'],
   franjasSel: ['Tarde'],
+  visitaPrevia: 'No',
   origenVisitante: 'Manizales',
   dondeConsigueLibros: ['Librería física', 'Digital'],
   comoSeEntero: ['Redes sociales'],
@@ -310,8 +311,8 @@ const RESPUESTA: Respuesta = {
 };
 
 describe('aFilaRespuestas', () => {
-  it('produce exactamente 27 celdas, una por encabezado', () => {
-    expect(ENCABEZADOS_RESPUESTAS).toHaveLength(27);
+  it('produce exactamente 28 celdas, una por encabezado', () => {
+    expect(ENCABEZADOS_RESPUESTAS).toHaveLength(28);
     expect(aFilaRespuestas(RESPUESTA)).toHaveLength(ENCABEZADOS_RESPUESTAS.length);
   });
 
@@ -322,12 +323,19 @@ describe('aFilaRespuestas', () => {
 
     expect(enColumna('session_id')).toBe(RESPUESTA.sessionId);
     expect(enColumna('dispositivo')).toBe('movil');
-    expect(enColumna('edad')).toBe('26-40');
+    expect(enColumna('edad')).toBe('29-40');
     // La hoja real pone `origen_visitante` en la posición 13, no en la 5 como
     // el prompt maestro: manda la hoja.
     expect(enColumna('origen_visitante')).toBe('Manizales');
     expect(enColumna('completado')).toBe('TRUE');
     expect(enColumna('version_app')).toBe('1.0.0');
+    // `visita_previa` se añadió después del resto, por eso va la última.
+    expect(enColumna('visita_previa')).toBe('No');
+  });
+
+  it('deja visita_previa vacía si no respondió', () => {
+    const fila = aFilaRespuestas({ ...RESPUESTA, visitaPrevia: null });
+    expect(fila[ENCABEZADOS_RESPUESTAS.indexOf('visita_previa')]).toBe('');
   });
 
   it('separa las listas con punto y coma, como pide el encabezado', () => {

@@ -30,7 +30,7 @@ la base de autores esté lista, todas en **un archivo** (`src/lib/data/source.ts
 | Serialización con el orden exacto de columnas | ✅ |
 | Telemetría implícita completa (§7.5 del prompt maestro) | ✅ |
 | `GET /api/catalogo`, `POST /api/respuestas` (crear) y `PATCH /api/respuestas/[sessionId]` (actualizar) | ✅ |
-| 125 tests (match, agenda, serendipia y contrato con Sheets) | ✅ |
+| 126 tests (match, agenda, serendipia y contrato con Sheets) | ✅ |
 | **Escritura real a `googleapis`** (`saveRespuesta` + `updateRespuesta`) | ✅ |
 | **Lectura real de autores/actividades** (base aún no lista) | ⏳ pendiente |
 | Panel de administración y despliegue | ❌ (fase 3, otra persona) |
@@ -38,7 +38,7 @@ la base de autores esté lista, todas en **un archivo** (`src/lib/data/source.ts
 ```bash
 npm install
 npm run dev        # http://localhost:3000
-npm test           # 125 tests
+npm test           # 126 tests
 npm run typecheck
 ```
 
@@ -198,7 +198,7 @@ hora_fin | lugar | descripcion | activo
   programación. Si no hay ninguna todavía, cae a los siete días de la feria.
 - `hora_inicio`/`hora_fin` en `HH:MM` 24h; en memoria, minutos desde medianoche.
 
-### `Respuestas` (27 columnas)
+### `Respuestas` (28 columnas)
 
 El orden exacto está en `ENCABEZADOS_RESPUESTAS`, y hay un test que falla si
 `aFilaRespuestas` se desalinea.
@@ -215,6 +215,10 @@ Detalles que importan:
 - Una sesión es **una sola fila**: el `POST` la crea y el `PATCH` la actualiza
   (upsert por `session_id`). Ya no existe la pestaña `Feedback`: el feedback vive
   en las columnas 21-23 de `Respuestas`.
+- **`visita_previa`** (columna 28, `AB`) se añadió el 9 sep 2026 y va **al
+  final**, no junto a `origen_visitante`/`donde_consigue_libros`/
+  `como_se_entero`: insertarla en medio habría desalineado las filas que la
+  hoja ya tenía escritas. Guarda `Sí`/`No`/vacío. Ver §11.
 
 ---
 
@@ -282,7 +286,121 @@ pero conviene conocerlos:
    actividades huérfanas en la agenda). Si el otro autor las necesita de
    vuelta, basta con volver a tocar "+" en su tarjeta.
 
-## 10. Lo que sigue faltando del prompt maestro
+## 10. Ajustes del test con usuarios (9 sep 2026)
+
+Después de la Fase 2, un test con usuarios reales dejó una lista de siete
+ajustes de UI más un rediseño de la bienvenida y la pantalla de cálculo.
+Todo está en la rama **`feat/ui-test-usuarios`** (aún no mergeada a `main`
+al escribir esto — revisa si ya hay PR abierto o mergeado antes de asumir
+que esto sigue pendiente). 126 tests en verde, typecheck y lint limpios.
+
+**Los siete puntos del test:**
+
+1. Capitalización de "Feria" como nombre propio en todos los textos donde
+   aparecía en minúscula (bienvenida, paso 7 del wizard, pantalla de
+   cálculo, paso 8/agenda, hoja de compartir, metadescripción).
+2. **Rangos etarios** cambiaron de `13-17 / 18-25 / 26-40 / 41-60 / 60+` a
+   `6-17 / 18-28 / 29-40 / 41-60 / 60+` (`src/lib/vocabulario.ts`,
+   `EDADES` + `EDAD_A_PUBLICO`). Si la hoja `Base Autores` tiene un
+   desplegable con los valores viejos en la columna de origen del dato o en
+   `Respuestas!edad`, **hay que actualizarlo a mano** — la app ya solo
+   valida y escribe los nuevos.
+3. El libro destacado del autor del match principal ahora se muestra
+   directo en la tarjeta de `Resultado.tsx` (antes solo en el modal); para
+   el resto de autores sigue solo en el modal.
+4. "Cuéntanos más" pasó de dos a **cuatro** preguntas (ver el punto de
+   `visita_previa` abajo) y se corrigió "Feria" en mayúscula ahí también.
+5. "Tu autor/a más afín" → **"Tu match ideal es"** en la cabecera del
+   resultado.
+6. Rediseño completo de la bienvenida (`Bienvenida.tsx`) — ver más abajo.
+7. Rediseño completo de la pantalla de cálculo (`Calculando.tsx`) — ver
+   más abajo.
+
+**Pregunta nueva "¿Habías venido antes a la Feria...?"** (Sí/No) en
+"Cuéntanos más". Escribe en la columna `visita_previa`, **28ª y última**
+columna de `Respuestas` (ver §6). Acción pendiente fuera del código:
+**alguien con permiso de edición tiene que crear el encabezado
+`visita_previa` en la celda `AB2`** de la hoja "Respuestas Match" (y su
+descripción en `AB3` si se sigue esa convención); mientras no exista, la
+app escribe igual en esa columna pero queda sin nombre para quien lea la
+hoja o para el panel de la fase 3.
+
+**Rediseño visual de `Bienvenida.tsx` y `Calculando.tsx`.** Se probaron
+varias direcciones con el usuario antes de asentar esta; documento solo el
+resultado final, porque los intentos intermedios (aves cruzando la
+pantalla, plantas en las cuatro esquinas, un corazón bordándose punto a
+punto en la bienvenida) fueron descartados y no viven en el código:
+
+- **Bienvenida**: fondo amarillo (`bg-yellow`, el token `--color-yellow`)
+  con un degradado sutil solo desde abajo. Una flor grande
+  (`public/flor.webp`, recortada de `Nativos/Plantas 01.png`) cuelga desde
+  arriba y roza el borde del identificador — anclada al propio bloque del
+  logo, no al viewport, para que el roce se mantenga igual en cualquier
+  alto de pantalla. Abajo, un perfil de Manizales hecho de siluetas planas
+  (Catedral + Torre del Cable como hitos reconocibles, más tres edificios
+  genéricos de relleno urbano) anclado al borde inferior, bajo los
+  botones. El emblema central ya **no es un corazón**: es una
+  **estampilla franqueada** (`Estampilla` en `src/components/ui/iconos.tsx`)
+  con la silueta de la Catedral dentro y un matasellos superpuesto en la
+  esquina — y el matasellos lleva un corazón pequeño en su centro, en la
+  misma tinta y el mismo giro que el resto del sello (si se aísla para que
+  se vea más nítido, deja de leerse como una impresión y pasa a verse como
+  una calcomanía pegada encima).
+- **Calculando**: ya no son dos rectángulos con un corazón; ahora es un
+  corazón que se **borda en punto de cruz** dentro de un aro de bordado
+  (`public/aro-bordado.webp`, de `Nativos/Aro de bordado.png`). El avance
+  de las puntadas (69 puntadas, dos tonos de hilo) hace de barra de
+  progreso implícita. Por eso `MINIMO_CALCULANDO_MS` en
+  `useCalcularMatch.ts` subió de 1500 a **2200ms**: con el tiempo viejo la
+  pantalla se iba justo cuando caía la última puntada y casi nadie llegaba
+  a verla completa. Si se toca ese número hay que revisar en paralelo los
+  `animation-delay` en `Calculando.tsx` y las clases `flm-puntada` /
+  `flm-aro-entra` de `globals.css`.
+- **Técnica de las siluetas de edificios**: los grabados de `Nativos/` son
+  arte de colección con textura y color (halftone), no vectores planos —
+  aplicarles un filtro de escala de grises se ve como una calcomanía
+  ocupada, no como parte de la identidad plana de la app. Lo que funciona
+  es extraer el canal alfa de la imagen y rellenarlo con un solo color de
+  marca, descartando el sombreado interno; en la Catedral y la Torre del
+  Cable el alfa original sigue el dibujo fino (los huecos de la celosía de
+  la torre son transparentes de verdad), así que el resultado es una
+  silueta limpia y reconocible. **No todos los recursos de `Nativos/`
+  sirven para esto**: se probó con "Torre de Chipre" y su alfa es solo el
+  contorno del recorte de papel, no el del edificio — el resultado era un
+  borrón irreconocible y se descartó.
+- Todos los recursos que se usaron están optimizados a WebP con `sharp`
+  (ya en `node_modules`, no hace falta instalar nada): el aro de bordado
+  pasó de 1,96MB a 160KB, la flor de ~200KB a 29KB, cada silueta de
+  edificio pesa entre 2 y 8KB.
+
+**Se eliminaron todos los emoji de la interfaz** (`👍`, `👎`, `⚠`, `✓`,
+`×`, `←`, `→`, `↻`, y el `❤` que usaba la bienvenida antes del rediseño).
+Cada plataforma los pintaba distinto — el caso que lo disparó fue el `❤`
+saliendo como el glifo a todo color de Apple en iOS, ajeno a la paleta.
+Ahora son iconos SVG en `src/components/ui/iconos.tsx` que heredan
+`currentColor`. Si agregas UI nueva, **no uses caracteres emoji ni
+símbolos tipográficos decorativos** (ni siquiera `⚠` o `→`): añade el
+icono a ese archivo.
+
+**Fallo de Google Sheets sin configurar deja de ser un error ruidoso.**
+Antes, sin `.env`, cada intento de guardar reintentaba 3 veces con
+backoff (hasta 11s) y terminaba en un `502` con `console.error`, lo que en
+`next dev` levanta el panel de errores en pantalla — parecía un bug de la
+app cuando en realidad solo faltaba la service account. Ahora
+`SheetsSinConfigurar` (en `googleSheets.ts`) se detecta antes del primer
+reintento y las rutas devuelven `501` de inmediato (~80ms), con un
+`console.warn` una sola vez por proceso. El cliente (`useEnviarRespuesta.ts`)
+trata el 501 como aviso, no como error. Esto es puramente de
+desarrollo/observabilidad: no cambia el contrato con quien consuma la API
+en producción con las credenciales puestas.
+
+**Crédito institucional**: se agregó "Desarrollado por el Centro de
+Ciencia Francisco José de Caldas" al pie de la bienvenida (bajo el aviso
+de anonimato). No existía en ninguna pantalla; la institución ya estaba
+nombrada en `01-PROMPT-MAESTRO-claude-code.md` §1 pero nunca llegó a la
+UI.
+
+## 11. Lo que sigue faltando del prompt maestro
 
 Nada de esto bloquea tu parte, pero conviene tenerlo en la lista:
 

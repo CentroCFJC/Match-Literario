@@ -5,6 +5,7 @@
 
 import { colorAvatar, etiquetasAutor, iniciales, textoOrigen } from '@/lib/autores';
 import { HojaInferior } from '@/components/ui/HojaInferior';
+import { IconoCerrar, IconoCheck, IconoFlechaDerecha, IconoMas } from '@/components/ui/iconos';
 import { etiquetaDia, minutosAHora } from '@/lib/vocabulario';
 import { useMatchStore } from '@/store/useMatchStore';
 
@@ -35,9 +36,9 @@ export function ModalAutor() {
     ? resultado.coincidencias.slice(0, 4)
     : [...autor.tematicas, ...autor.generos].slice(0, 2);
 
-  // La bio larga solo se muestra para el autor destacado ("Tu autor/a más
-  // afín"): en su tarjeta ya se ve la corta, y "Ver perfil" es el único lugar
-  // donde amplía. Para el resto, el perfil se queda en la corta.
+  // La bio larga solo se muestra para el autor destacado ("Tu match ideal es"):
+  // en su tarjeta ya se ve la corta, y "Ver perfil" es el único lugar donde
+  // amplía. Para el resto, el perfil se queda en la corta.
   const esDestacado = resultados[0]?.autorId === autor.id;
   const bio = esDestacado ? autor.bioLarga || autor.bioCorta : autor.bioCorta;
 
@@ -53,9 +54,9 @@ export function ModalAutor() {
           type="button"
           onClick={cerrar}
           aria-label="Cerrar"
-          className="absolute right-4 top-4 h-[34px] w-[34px] rounded-pill border-none bg-white/[.18] text-[18px] text-cream-white"
+          className="absolute right-4 top-4 flex h-[34px] w-[34px] items-center justify-center rounded-pill border-none bg-white/[.18] text-cream-white"
         >
-          ×
+          <IconoCerrar tamano={18} />
         </button>
         <div
           className="mx-auto mb-3 mt-[6px] flex h-[92px] w-[92px] items-center justify-center overflow-hidden rounded-pill font-display text-[34px] font-extrabold text-cream-white"
@@ -78,7 +79,8 @@ export function ModalAutor() {
           {bio}
         </p>
 
-        {autor.libroDestacado ? (
+        {/* El destacado ya lo muestra en la pantalla de resultado. */}
+        {autor.libroDestacado && !esDestacado ? (
           <p className="m-0 mb-5 font-body text-[14px] text-text-muted">
             Libro destacado:{' '}
             <span className="font-script text-[16px] italic text-burgundy">
@@ -151,13 +153,14 @@ export function ModalAutor() {
                   <button
                     type="button"
                     onClick={() => alternarActividad(actividad.id)}
-                    className="mt-2 min-h-[40px] rounded-pill border-none px-[18px] font-display text-[13px] font-bold"
+                    className="mt-2 inline-flex min-h-[40px] items-center gap-[6px] rounded-pill border-none px-[18px] font-display text-[13px] font-bold"
                     style={{
                       background: anadida ? 'var(--color-burgundy)' : 'var(--color-yellow)',
                       color: anadida ? 'var(--color-cream-white)' : 'var(--color-burgundy)',
                     }}
                   >
-                    {anadida ? '✓ En tu agenda' : '+ añadir a mi agenda'}
+                    {anadida ? <IconoCheck tamano={15} /> : <IconoMas tamano={15} />}
+                    {anadida ? 'En tu agenda' : 'Añadir a mi agenda'}
                   </button>
                 </div>
               );
@@ -170,9 +173,10 @@ export function ModalAutor() {
             href={autor.webORed}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-6 inline-block font-display text-[14px] font-bold text-magenta"
+            className="mt-6 inline-flex items-center gap-[5px] font-display text-[14px] font-bold text-magenta"
           >
-            Ver su web o redes →
+            Ver su web o redes
+            <IconoFlechaDerecha tamano={15} />
           </a>
         ) : null}
       </div>

@@ -37,6 +37,7 @@ export function construirCuerpo(opciones: {
     diasAsistenciaSel: seleccion.dias,
     franjasSel: seleccion.franjas,
 
+    visitaPrevia: extra.visitaPrevia,
     origenVisitante: extra.origenVisitante,
     dondeConsigueLibros: extra.dondeConsigueLibros,
     comoSeEntero: extra.comoSeEntero,
@@ -105,6 +106,17 @@ async function enviar(url: string, metodo: 'POST' | 'PATCH', cuerpo: CuerpoRespu
       body: JSON.stringify(cuerpo),
     });
     if (!respuesta.ok) {
+      // 501 = el servidor no tiene configurada la hoja de cálculo. Es lo normal
+      // en un entorno local sin `.env`, así que se avisa sin usar `console.error`:
+      // el panel de errores de Next lo trataría como un fallo de la app y taparía
+      // la pantalla, cuando aquí no hay nada roto que arreglar en el cliente.
+      if (respuesta.status === 501) {
+        console.warn(
+          '[useEnviarRespuesta] las respuestas no se están guardando: el servidor no tiene ' +
+            'configurado Google Sheets. La app funciona igual (ver .env.example).',
+        );
+        return false;
+      }
       console.error(
         `[useEnviarRespuesta] la API respondió ${respuesta.status} a ${metodo} ${url}:`,
         await respuesta.text(),

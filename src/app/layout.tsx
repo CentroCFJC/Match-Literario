@@ -4,7 +4,7 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'Match Literario · 17 Feria del Libro de Manizales',
   description:
-    'Responde unas preguntas rápidas sobre lo que te gusta leer y te armamos una ruta a tu medida por la feria.',
+    'Responde unas preguntas rápidas sobre lo que te gusta leer y te armamos una ruta a tu medida por la Feria.',
 };
 
 export const viewport: Viewport = {

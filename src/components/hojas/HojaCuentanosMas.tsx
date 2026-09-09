@@ -3,13 +3,18 @@
 import { Chip } from '@/components/ui/Chip';
 import { HojaInferior, ManijaHoja } from '@/components/ui/HojaInferior';
 import { useActualizarRespuesta } from '@/hooks/useEnviarRespuesta';
-import { COMO_SE_ENTERO, DONDE_LIBROS, ORIGENES_VISITANTE } from '@/lib/vocabulario';
+import {
+  COMO_SE_ENTERO,
+  DONDE_LIBROS,
+  ORIGENES_VISITANTE,
+  VISITA_PREVIA,
+} from '@/lib/vocabulario';
 import { useMatchStore } from '@/store/useMatchStore';
 
 /**
- * Pantalla 12: las tres preguntas opcionales de perfil.
- * Alimentan las columnas `origen_visitante`, `donde_consigue_libros` y
- * `como_se_entero` de la hoja `Respuestas`.
+ * Pantalla 12: las cuatro preguntas opcionales de perfil.
+ * Alimentan las columnas `visita_previa`, `origen_visitante`,
+ * `donde_consigue_libros` y `como_se_entero` de la hoja `Respuestas`.
  */
 export function HojaCuentanosMas() {
   const extra = useMatchStore((e) => e.extra);
@@ -33,8 +38,28 @@ export function HojaCuentanosMas() {
       <div className="px-6 pb-[26px] pt-[22px]">
         <ManijaHoja />
         <h2 className="m-0 mb-5 text-balance font-display text-[21px] font-extrabold text-ink">
-          Dos preguntas rápidas para mejorar la feria
+          Cuatro preguntas rápidas para mejorar la Feria
         </h2>
+
+        <div className="mb-[10px] font-display text-[15px] font-bold text-burgundy">
+          ¿Habías venido antes a la Feria del Libro de Manizales?
+        </div>
+        <div
+          className="mb-[22px] flex flex-wrap gap-[9px]"
+          role="radiogroup"
+          aria-label="Habías venido antes a la Feria"
+        >
+          {VISITA_PREVIA.map((opcion) => (
+            <Chip
+              key={opcion}
+              label={opcion}
+              seleccionado={extra.visitaPrevia === opcion}
+              onClick={() =>
+                fijarExtra({ visitaPrevia: extra.visitaPrevia === opcion ? null : opcion })
+              }
+            />
+          ))}
+        </div>
 
         <div className="mb-[10px] font-display text-[15px] font-bold text-burgundy">
           ¿De dónde nos visitas?
@@ -79,7 +104,7 @@ export function HojaCuentanosMas() {
         </div>
 
         <div className="mb-[10px] font-display text-[15px] font-bold text-burgundy">
-          ¿Cómo te enteraste de la feria?
+          ¿Cómo te enteraste de la Feria?
         </div>
         <div
           className="mb-[26px] flex flex-wrap gap-[9px]"
