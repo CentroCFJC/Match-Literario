@@ -32,7 +32,7 @@ la base de autores esté lista, todas en **un archivo** (`src/lib/data/source.ts
 | `GET /api/catalogo`, `POST /api/respuestas` (crear) y `PATCH /api/respuestas/[sessionId]` (actualizar) | ✅ |
 | 126 tests (match, agenda, serendipia y contrato con Sheets) | ✅ |
 | **Escritura real a `googleapis`** (`saveRespuesta` + `updateRespuesta`) | ✅ |
-| **Lectura real de autores/actividades** (base aún no lista) | ⏳ pendiente |
+| **Lectura real de autores/actividades** con cacheo y revalidación | ✅ |
 | Panel de administración y despliegue | ❌ (fase 3, otra persona) |
 
 ```bash
@@ -42,34 +42,31 @@ npm test           # 126 tests
 npm run typecheck
 ```
 
-Hoy la escritura va a Google Sheets real y la lectura funciona de punta a punta
-con 20 autores y 30 actividades de ejemplo que imitan la forma de la hoja real.
+Tanto la lectura como la escritura van a Google Sheets real. La lectura se
+sigue sirviendo desde el mock si no hay credenciales configuradas, para que el
+desarrollo local no dependa de tener acceso a la hoja.
 
 ---
 
-## 2. Lo único que tienes que tocar
+## 2. Lectura y escritura conectadas
 
 ### `src/lib/data/source.ts`
 
 ```ts
-export async function getAutores(): Promise<Autor[]>          // TODO: lectura real (pendiente)
-export async function getActividades(): Promise<Actividad[]>  // TODO: lectura real (pendiente)
+export async function getAutores(): Promise<Autor[]>          // GET real + cache + fallback mock
+export async function getActividades(): Promise<Actividad[]>  // GET real + cache + fallback mock
 export async function saveRespuesta(entrada, contexto): Promise<Respuesta>     // POST → crea la fila (ya real)
 export async function updateRespuesta(entrada, contexto): Promise<Respuesta>   // PATCH → upsert (ya real)
 ```
 
-Solo quedan **`getAutores` y `getActividades`** por conectar. **No cambies las
-firmas.** Cada una lleva su contrato y su `// TODO (lectura diferida)` con la
-llamada concreta. Compruébalo con:
+La lectura usa Google Sheets real a través de `getSheets()`, con `unstable_cache`
+y el tag `catalogo`. Si faltan credenciales o `SHEET_AUTORES_ID`, cae al mock de
+desarrollo.
 
-```bash
-grep -rn "lectura diferida" src/
-```
-
-**Ya está hecho por ti** (probado, no lo reescribas):
+Piezas clave:
 
 | Qué | Dónde |
-|---|---|
+|---|---|---|
 | Rangos A1 con la fila de encabezados descontada | `RANGOS` en `source.ts` |
 | Fila de `Autores` → objeto `Autor` | `filaAAutor` en `data/parseo.ts` |
 | Fila de `Actividades` → objeto `Actividad` | `filaAActividad` en `data/parseo.ts` |
@@ -79,16 +76,7 @@ grep -rn "lectura diferida" src/
 | Fusionar el PATCH conservando las columnas "(auto)" | `fusionarFilaRespuestas` en `data/actualizacion.ts` |
 | Encabezados literales de `Respuestas` | `ENCABEZADOS_RESPUESTAS` en `data/serializacion.ts` |
 | `user-agent` → columna `dispositivo` | `dispositivoDesdeUserAgent` |
-
-Tu `getAutores` debería quedar en algo así:
-
-```ts
-const { data } = await sheets.spreadsheets.values.get({
-  spreadsheetId: process.env.SHEET_AUTORES_ID,
-  range: RANGOS.autores,
-});
-return (data.values ?? []).map(filaAAutor).filter((a): a is Autor => a !== null);
-```
+| Cacheo y revalidación del catálogo | `source.ts` + `POST /api/revalidate` |
 
 ---
 
@@ -173,13 +161,15 @@ La definición canónica, con el nombre de columna de cada campo, está en
 ```
 id | nombre_completo | nombre_visible | genero_autor | pais | origen |
 bio_corta | bio_larga | foto_url | libro_destacado | web_o_red |
-generos | tematicas | mood | publico | estilo | voces | activo
+generos | tematicas | mood | publico | estilo | voces | franja_tematica | activo
 ```
 
 - `estilo` es **un solo valor** (desplegable), no una lista.
 - `publico` usa su propio vocabulario: Infantil / Juvenil / Adulto joven / Adulto.
 - `genero_autor` (F/M/No binario/Colectivo) **no puntúa afinidad**: solo
   diversifica el ranking (§6.3 del prompt maestro).
+- `franja_tematica` es **un solo valor** del vocabulario de secciones de la feria.
+  No entra al match ni a la UI en esta versión; se almacena para uso futuro.
 - Al leer, `conVozDeOrigen` añade a `voces` la voz que implica `origen`
   (Local/Caldas → "Voces locales", Nacional → "Voces colombianas", etc.), para
   que el origen pese aunque la curaduría no lo repita a mano.
@@ -230,8 +220,10 @@ Detalles que importan:
    escribió y en qué fila).
 3. Toca "Mi agenda" o responde "¿Te sirvió tu match?" y comprueba que actualiza
    la MISMA fila (`[data] UPDATE …`), sin duplicar la sesión.
-4. La lectura de autores sigue en mock: `GET /api/catalogo` devuelve los 20
-   autores de ejemplo hasta que la base real esté lista.
+4. `GET /api/catalogo` devuelve los autores y actividades de la hoja real cuando
+   `SHEET_AUTORES_ID` está configurado. Sin configurar, cae al mock de 20 autores.
+5. Probar `POST /api/revalidate?token=REVALIDATE_TOKEN` y verificar que la
+   siguiente lectura de `/api/catalogo` refleja cambios recientes en la hoja.
 
 ---
 

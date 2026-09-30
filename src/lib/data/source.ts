@@ -11,23 +11,22 @@
  *   · "Base Autores"     (SHEET_AUTORES_ID)     — la app solo LEE
  *   · "Respuestas Match" (SHEET_RESPUESTAS_ID)  — la app solo ESCRIBE
  *
- * Este archivo es la frontera entre la app y los datos. Hoy está a medias a
- * propósito:
- *   · LECTURA  (autores/actividades) → mock: la base de autores aún no está lista.
+ * Este archivo es la frontera entre la app y los datos:
+ *   · LECTURA  (autores/actividades) → Google Sheets real, con cacheo y fallback
+ *                                      al mock cuando no hay configuración.
  *   · ESCRITURA (respuestas)         → Google Sheets real (POST append + PATCH upsert).
- *
- * Cuando la base de autores esté lista, solo hay que rellenar `getAutores` y
- * `getActividades` con `values.get` + `filaAAutor`/`filaAActividad`.
  *
  * Ver `HANDOFF.md` para el contrato completo.
  */
 
 import 'server-only';
 
+import { unstable_cache } from 'next/cache';
+
 import { fusionarFilaRespuestas, indiceFilaPorSessionId } from './actualizacion';
-import { conReintento, getSheets } from './googleSheets';
+import { conReintento, getSheets, haySheets } from './googleSheets';
 import { ACTIVIDADES_MOCK, AUTORES_MOCK } from './mock';
-import { conVozDeOrigen } from './parseo';
+import { conVozDeOrigen, filaAActividad, filaAAutor } from './parseo';
 import { aFilaRespuestas, dispositivoDesdeUserAgent, ENCABEZADOS_RESPUESTAS } from './serializacion';
 import type { Actividad, Autor, Respuesta, RespuestaEntrante } from './types';
 
@@ -63,8 +62,8 @@ export { fusionarFilaRespuestas, indiceFilaPorSessionId } from './actualizacion'
  * que revisar.
  */
 export const RANGOS = {
-  /** Lectura: 18 columnas, A..R, desde la fila 4. */
-  autores: 'Autores!A4:R',
+  /** Lectura: 19 columnas, A..S, desde la fila 4. */
+  autores: 'Autores!A4:S',
   /** Lectura: 10 columnas, A..J, desde la fila 3. */
   actividades: 'Actividades!A3:J',
   /** Escritura (append): 28 columnas, A..AB. */
@@ -92,21 +91,22 @@ function esperar(ms: number): Promise<void> {
  *
  * Contrato:
  *   - Solo `activo === true`.
- *   - Descarta filas sin `id` (la hoja viene con 1000 filas en blanco).
+ *   - Descarta filas sin `id` (la hoja viene con filas en blanco al final).
  *   - Descarta la fila de ejemplo `AUT000` mientras la curaduría no la borre.
  *   - Los campos multivaluados llegan canonizados contra `vocabulario.ts`.
  *   - Nunca lanza por una fila mal formada: la descarta y sigue.
  *   - Lanza SOLO si no puede leer la hoja; la UI lo traduce a la pantalla
  *     "No pudimos cargar los autores".
  *
- * TODO (lectura diferida): cuando la base de autores esté lista, reemplazar el
- *       mock por `sheets.spreadsheets.values.get({ spreadsheetId: SHEET_AUTORES_ID,
- *       range: RANGOS.autores })` y pasar cada fila por `filaAAutor`.
- *       Cachear con `revalidate = SHEETS_CACHE_TTL_SECONDS`.
+ * Si no hay configuración de Google Sheets, cae al mock de desarrollo.
  */
 export async function getAutores(): Promise<Autor[]> {
-  await esperar(LATENCIA_MOCK_MS);
-  return AUTORES_MOCK.filter((autor) => autor.activo).map(conVozDeOrigen);
+  if (!hayConfiguracionLectura()) {
+    avisarLecturaMock();
+    await esperar(LATENCIA_MOCK_MS);
+    return AUTORES_MOCK.filter((autor) => autor.activo).map(conVozDeOrigen);
+  }
+  return getAutoresReales();
 }
 
 /**
@@ -117,22 +117,53 @@ export async function getAutores(): Promise<Autor[]> {
  *   - Descarta las plantillas que crea el Apps Script al añadir un autor
  *     (título `[Actividad de …]`, sin `fecha` ni `hora_inicio`): todavía no son
  *     programación real y romperían la agenda.
- *   - Descarta las que no referencian ningún autor existente.
  *   - `inicioMin`/`finMin` en minutos desde medianoche; si `hora_fin` va vacía,
  *     se asume una hora de duración.
  *
- * TODO (lectura diferida): cuando la base esté lista, reemplazar el mock por
- *       `values.get({ spreadsheetId: SHEET_AUTORES_ID,
- *       range: RANGOS.actividades })` y pasar cada fila por `filaAActividad`.
+ * El cruce con autores activos se hace en `/api/catalogo` para no leer la hoja
+ * de autores dos veces.
+ *
+ * Si no hay configuración de Google Sheets, cae al mock de desarrollo.
  */
 export async function getActividades(): Promise<Actividad[]> {
-  await esperar(LATENCIA_MOCK_MS);
-  const idsAutores = new Set(AUTORES_MOCK.filter((a) => a.activo).map((a) => a.id));
-  return ACTIVIDADES_MOCK.filter(
-    (actividad) =>
-      actividad.activo && actividad.autorIds.some((autorId) => idsAutores.has(autorId)),
-  );
+  if (!hayConfiguracionLectura()) {
+    avisarLecturaMock();
+    await esperar(LATENCIA_MOCK_MS);
+    return ACTIVIDADES_MOCK.filter((actividad) => actividad.activo);
+  }
+  return getActividadesReales();
 }
+
+/** Lectura real de autores, cacheada con `unstable_cache` y tag `catalogo`. */
+const getAutoresReales = unstable_cache(
+  async (): Promise<Autor[]> => {
+    const { data } = await getSheets().spreadsheets.values.get({
+      spreadsheetId: idAutores(),
+      range: RANGOS.autores,
+    });
+    return (data.values ?? [])
+      .map(filaAAutor)
+      .filter((a): a is Autor => a !== null)
+      .map(conVozDeOrigen);
+  },
+  ['autores'],
+  { revalidate: cacheTTL(), tags: ['catalogo'] },
+);
+
+/** Lectura real de actividades, cacheada con `unstable_cache` y tag `catalogo`. */
+const getActividadesReales = unstable_cache(
+  async (): Promise<Actividad[]> => {
+    const { data } = await getSheets().spreadsheets.values.get({
+      spreadsheetId: idAutores(),
+      range: RANGOS.actividades,
+    });
+    return (data.values ?? [])
+      .map(filaAActividad)
+      .filter((a): a is Actividad => a !== null);
+  },
+  ['actividades'],
+  { revalidate: cacheTTL(), tags: ['catalogo'] },
+);
 
 // ===========================================================================
 // Escritura
@@ -275,6 +306,37 @@ function idRespuestas(): string {
   const id = process.env.SHEET_RESPUESTAS_ID;
   if (!id) throw new Error('[data] falta la variable SHEET_RESPUESTAS_ID.');
   return id;
+}
+
+/** Id del spreadsheet "Base Autores" (SHEET_AUTORES_ID), validado. */
+function idAutores(): string {
+  const id = process.env.SHEET_AUTORES_ID;
+  if (!id) throw new Error('[data] falta la variable SHEET_AUTORES_ID.');
+  return id;
+}
+
+/** `true` si tenemos credenciales de Google y el ID de la hoja de autores. */
+function hayConfiguracionLectura(): boolean {
+  return haySheets() && Boolean(process.env.SHEET_AUTORES_ID);
+}
+
+/** TTL del cache de lectura, en segundos. */
+function cacheTTL(): number {
+  const ttl = Number(process.env.SHEETS_CACHE_TTL_SECONDS);
+  return Number.isFinite(ttl) && ttl > 0 ? ttl : 300;
+}
+
+let yaAvisadoMock = false;
+
+/** Avisa UNA sola vez por proceso de que la lectura está usando el mock. */
+function avisarLecturaMock(): void {
+  if (yaAvisadoMock) return;
+  yaAvisadoMock = true;
+  console.warn(
+    '[data] Lectura de autores/actividades usando el mock de desarrollo. ' +
+      'Define GOOGLE_SERVICE_ACCOUNT_EMAIL, GOOGLE_PRIVATE_KEY y SHEET_AUTORES_ID en .env ' +
+      'para conectar con Google Sheets real.',
+  );
 }
 
 /** Extrae el número de fila de un rango A1 tipo "Respuestas!A5:AB5" → 5. */

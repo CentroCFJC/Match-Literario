@@ -26,7 +26,7 @@ import type { Respuesta } from '@/lib/data/types';
 import { aFechaISO, etiquetaDia, horaAMinutos, partirCelda } from '@/lib/vocabulario';
 
 // ---------------------------------------------------------------------------
-// Filas reales de `Autores` (18 celdas, A..R)
+// Filas reales de `Autores` (19 celdas, A..S)
 // ---------------------------------------------------------------------------
 
 /** Fila real de la hoja: Nona Fernández, con tags a medio curar. */
@@ -48,6 +48,7 @@ const FILA_NONA = [
   'Adulto, Adulto joven, Juvenil',
   'Accesible',
   'Autoras mujeres, Voces latinoamericanas',
+  'General',
   true,
 ];
 
@@ -88,13 +89,13 @@ describe('filaAAutor', () => {
 
   it('descarta filas en blanco', () => {
     expect(filaAAutor([])).toBeNull();
-    expect(filaAAutor(new Array(18).fill(''))).toBeNull();
+    expect(filaAAutor(new Array(19).fill(''))).toBeNull();
   });
 
   it('descarta autores inactivos, vengan como texto o como booleano', () => {
-    expect(filaAAutor([...FILA_NONA.slice(0, 17), 'FALSE'])).toBeNull();
-    expect(filaAAutor([...FILA_NONA.slice(0, 17), false])).toBeNull();
-    expect(filaAAutor([...FILA_NONA.slice(0, 17), 'TRUE'])).not.toBeNull();
+    expect(filaAAutor([...FILA_NONA.slice(0, 18), 'FALSE'])).toBeNull();
+    expect(filaAAutor([...FILA_NONA.slice(0, 18), false])).toBeNull();
+    expect(filaAAutor([...FILA_NONA.slice(0, 18), 'TRUE'])).not.toBeNull();
   });
 
   it('cae a nombre_completo si nombre_visible va vacío', () => {
@@ -113,6 +114,17 @@ describe('filaAAutor', () => {
     const fila = [...FILA_NONA];
     fila[11] = 'poesia, CRÓNICA/PERIODISMO';
     expect(filaAAutor(fila)!.generos).toEqual(['Poesía', 'Crónica/Periodismo']);
+  });
+
+  it('parsea la franja temática como un único valor canónico', () => {
+    const autor = filaAAutor(FILA_NONA)!;
+    expect(autor.franjaTematica).toBe('General');
+  });
+
+  it('deja franja_tematica como null si el valor no está en el vocabulario', () => {
+    const fila = [...FILA_NONA];
+    fila[17] = 'Franja inventada';
+    expect(filaAAutor(fila)!.franjaTematica).toBeNull();
   });
 });
 

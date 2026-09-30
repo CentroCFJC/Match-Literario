@@ -18,10 +18,10 @@ npm install
 npm run dev          # http://localhost:3000
 ```
 
-La **lectura** (autores y actividades) funciona sin credenciales: viene de un
-mock con 20 autores y 30 actividades que cubren todo el vocabulario. La
-**escritura** (respuestas) ya va a Google Sheets real y requiere las variables
-de `.env` (service account + `SHEET_RESPUESTAS_ID`).
+La **lectura** (autores y actividades) usa Google Sheets real cuando `SHEET_AUTORES_ID`
+está configurado en `.env`; si falta, cae a un mock con 20 autores y 30 actividades
+que cubren todo el vocabulario. La **escritura** (respuestas) ya va a Google Sheets
+real y requiere las variables de `.env` (service account + `SHEET_RESPUESTAS_ID`).
 
 | Comando | Qué hace |
 |---|---|
@@ -177,10 +177,10 @@ copiadas de esos archivos.
 
 1. **Frontend y arquitectura** — hecho. 126 tests en verde, probado en
    escritorio y en celular por red local.
-2. **Conexión con Google Sheets** — ver [`HANDOFF.md`](./HANDOFF.md). La
-   **escritura** ya es real (`saveRespuesta` + `updateRespuesta`); solo falta
-   conectar la **lectura** (`getAutores` / `getActividades`) cuando la base de
-   autores esté lista.
+2. **Conexión con Google Sheets** — hecho. Tanto la **lectura**
+   (`getAutores` + `getActividades`) como la **escritura** (`saveRespuesta` +
+   `updateRespuesta`) usan Google Sheets real. La lectura se cachea y se puede
+   revalidar con `POST /api/revalidate?token=...`.
 2.5. **Ajustes de UI del test con usuarios** (9 sep 2026, rama
    `feat/ui-test-usuarios`) — siete ajustes de texto/datos, rediseño completo
    de la bienvenida y la pantalla de cálculo con la identidad visual de la

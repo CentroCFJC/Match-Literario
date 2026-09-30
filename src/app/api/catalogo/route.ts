@@ -20,7 +20,11 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
     const [autores, actividades] = await Promise.all([getAutores(), getActividades()]);
-    return NextResponse.json({ autores, actividades });
+    const idsAutores = new Set(autores.map((autor) => autor.id));
+    const actividadesFiltradas = actividades.filter((actividad) =>
+      actividad.autorIds.some((autorId) => idsAutores.has(autorId)),
+    );
+    return NextResponse.json({ autores, actividades: actividadesFiltradas });
   } catch (error) {
     console.error('[GET /api/catalogo] no se pudo leer la fuente de datos:', error);
     return NextResponse.json(

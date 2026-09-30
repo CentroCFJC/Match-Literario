@@ -24,7 +24,7 @@ import type { Voz } from '@/lib/vocabulario';
 import type { Actividad, Autor } from './types';
 
 /**
- * Convierte una fila de `Autores` (18 celdas, A..R) en un `Autor`.
+ * Convierte una fila de `Autores` (19 celdas, A..S) en un `Autor`.
  * Devuelve `null` si la fila no es un autor utilizable.
  */
 export function filaAAutor(fila: unknown[]): Autor | null {
@@ -33,7 +33,7 @@ export function filaAAutor(fila: unknown[]): Autor | null {
   const id = celda(0);
   // Filas en blanco y la fila de ejemplo que trae la plantilla.
   if (!id || id.toUpperCase() === 'AUT000') return null;
-  if (!esVerdadero(fila[17])) return null;
+  if (!esVerdadero(fila[18])) return null;
 
   const nombreCompleto = celda(1);
   const nombreVisible = celda(2) || nombreCompleto;
@@ -60,6 +60,7 @@ export function filaAAutor(fila: unknown[]): Autor | null {
     publico: canonizarLista('publico', partirCelda(celda(14))) as Autor['publico'],
     estilo: canonizar('estilo', celda(15)) as Autor['estilo'],
     voces: canonizarLista('voces', partirCelda(celda(16))) as Autor['voces'],
+    franjaTematica: canonizar('franjasTematicas', celda(17)) as Autor['franjaTematica'],
     activo: true,
   };
 

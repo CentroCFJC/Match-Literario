@@ -25,6 +25,7 @@ import type {
   Estilo,
   FechaISO,
   Franja,
+  FranjaTematica,
   Genero,
   GeneroAutor,
   Mood,
@@ -49,7 +50,7 @@ import type {
  *
  *   id | nombre_completo | nombre_visible | genero_autor | pais | origen |
  *   bio_corta | bio_larga | foto_url | libro_destacado | web_o_red |
- *   generos | tematicas | mood | publico | estilo | voces | activo
+ *   generos | tematicas | mood | publico | estilo | voces | franja_tematica | activo
  */
 export interface Autor {
   /** columna `id` — "AUT001…". No son contiguos: la curaduría borra filas. */
@@ -98,6 +99,12 @@ export interface Autor {
    * que el origen pese en el match aunque la curaduría no lo repita a mano.
    */
   voces: Voz[];
+
+  /**
+   * columna `franja_tematica` — vocabulario: FRANJAS_TEMATICAS.
+   * No entra al match ni a la UI en esta versión; se guarda para uso futuro.
+   */
+  franjaTematica: FranjaTematica | null;
 
   /** columna `activo` — TRUE/FALSE. Los `false` no se muestran (cancelaciones). */
   activo: boolean;

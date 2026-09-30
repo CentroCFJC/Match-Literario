@@ -96,6 +96,20 @@ export const TIPOS_ACTIVIDAD = [
   'Talleres',
 ] as const;
 
+/** Columna `franja_tematica` de `Autores`. Un solo valor por autor. */
+export const FRANJAS_TEMATICAS = [
+  'Pequeños lectores',
+  'Cómic en las montañas',
+  'Intergeneracional',
+  'Académica y de investigación',
+  'Creación y oficio literario',
+  'Lenguajes artísticos',
+  'Ciudadanía y actualidad',
+  'Cartografías de la intimidad',
+  'Diez años de la paz: palabras para encontrarnos',
+  'General',
+] as const;
+
 /** Columna `genero_autor` de `Autores`. Solo se usa para diversificar el ranking. */
 export const GENEROS_AUTOR = ['F', 'M', 'No binario', 'Colectivo'] as const;
 
@@ -173,6 +187,7 @@ export type Estilo = (typeof ESTILOS)[number]['label'];
 export type Voz = (typeof VOCES)[number];
 export type VozWizard = (typeof VOCES_WIZARD)[number];
 export type TipoActividad = (typeof TIPOS_ACTIVIDAD)[number];
+export type FranjaTematica = (typeof FRANJAS_TEMATICAS)[number];
 export type GeneroAutor = (typeof GENEROS_AUTOR)[number];
 export type OrigenAutor = (typeof ORIGENES_AUTOR)[number];
 export type Edad = (typeof EDADES)[number];
@@ -255,6 +270,7 @@ const INDICES = {
   voces: construirIndice(VOCES),
   vocesWizard: construirIndice(VOCES_WIZARD),
   tiposActividad: construirIndice(TIPOS_ACTIVIDAD),
+  franjasTematicas: construirIndice(FRANJAS_TEMATICAS),
   generoAutor: construirIndice(GENEROS_AUTOR),
   origenAutor: construirIndice(ORIGENES_AUTOR),
   edad: construirIndice(EDADES),

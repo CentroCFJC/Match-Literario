@@ -39,6 +39,7 @@ export const AUTORES_MOCK: Autor[] = [
     publico: ['Adulto', 'Adulto joven'],
     estilo: 'Accesible',
     voces: ['Autoras mujeres'],
+    franjaTematica: 'General',
     activo: true,
   },
   {
@@ -60,6 +61,7 @@ export const AUTORES_MOCK: Autor[] = [
     publico: ['Adulto'],
     estilo: 'Accesible',
     voces: [],
+    franjaTematica: 'General',
     activo: true,
   },
   {
@@ -81,6 +83,7 @@ export const AUTORES_MOCK: Autor[] = [
     publico: ['Adulto joven', 'Adulto'],
     estilo: 'Literario/Experimental',
     voces: ['Autoras mujeres'],
+    franjaTematica: 'General',
     activo: true,
   },
   {
@@ -102,6 +105,7 @@ export const AUTORES_MOCK: Autor[] = [
     publico: ['Adulto'],
     estilo: 'Académico',
     voces: [],
+    franjaTematica: 'General',
     activo: true,
   },
   {
@@ -123,6 +127,7 @@ export const AUTORES_MOCK: Autor[] = [
     publico: ['Adulto'],
     estilo: 'Accesible',
     voces: ['Autoras mujeres'],
+    franjaTematica: 'General',
     activo: true,
   },
   {
@@ -144,6 +149,7 @@ export const AUTORES_MOCK: Autor[] = [
     publico: ['Adulto joven', 'Adulto'],
     estilo: 'Accesible',
     voces: [],
+    franjaTematica: 'General',
     activo: true,
   },
   {
@@ -165,6 +171,7 @@ export const AUTORES_MOCK: Autor[] = [
     publico: ['Adulto joven', 'Adulto'],
     estilo: 'Literario/Experimental',
     voces: ['Autoras mujeres', 'Voces indígenas y afro'],
+    franjaTematica: 'General',
     activo: true,
   },
   {
@@ -186,6 +193,7 @@ export const AUTORES_MOCK: Autor[] = [
     publico: ['Adulto joven', 'Adulto'],
     estilo: 'Accesible',
     voces: [],
+    franjaTematica: 'General',
     activo: true,
   },
   {
@@ -207,6 +215,7 @@ export const AUTORES_MOCK: Autor[] = [
     publico: ['Juvenil', 'Adulto joven'],
     estilo: 'Accesible',
     voces: ['Autoras mujeres', 'Autores jóvenes/emergentes'],
+    franjaTematica: 'General',
     activo: true,
   },
   {
@@ -228,6 +237,7 @@ export const AUTORES_MOCK: Autor[] = [
     publico: ['Adulto'],
     estilo: 'Académico',
     voces: [],
+    franjaTematica: 'General',
     activo: true,
   },
   {
@@ -249,6 +259,7 @@ export const AUTORES_MOCK: Autor[] = [
     publico: ['Adulto joven', 'Adulto'],
     estilo: 'Literario/Experimental',
     voces: ['Autoras mujeres', 'Voces indígenas y afro'],
+    franjaTematica: 'General',
     activo: true,
   },
   {
@@ -270,6 +281,7 @@ export const AUTORES_MOCK: Autor[] = [
     publico: ['Adulto joven', 'Adulto'],
     estilo: 'Accesible',
     voces: [],
+    franjaTematica: 'General',
     activo: true,
   },
   {
@@ -291,6 +303,7 @@ export const AUTORES_MOCK: Autor[] = [
     publico: ['Juvenil', 'Adulto joven'],
     estilo: 'Accesible',
     voces: ['Autoras mujeres', 'Autores jóvenes/emergentes'],
+    franjaTematica: 'General',
     activo: true,
   },
   {
@@ -312,6 +325,7 @@ export const AUTORES_MOCK: Autor[] = [
     publico: ['Adulto'],
     estilo: 'Literario/Experimental',
     voces: [],
+    franjaTematica: 'General',
     activo: true,
   },
   {
@@ -333,6 +347,7 @@ export const AUTORES_MOCK: Autor[] = [
     publico: ['Adulto'],
     estilo: 'Accesible',
     voces: ['Autoras mujeres'],
+    franjaTematica: 'General',
     activo: true,
   },
   {
@@ -354,6 +369,7 @@ export const AUTORES_MOCK: Autor[] = [
     publico: ['Infantil', 'Juvenil'],
     estilo: 'Accesible',
     voces: ['Autoras mujeres'],
+    franjaTematica: 'General',
     activo: true,
   },
   {
@@ -375,6 +391,7 @@ export const AUTORES_MOCK: Autor[] = [
     publico: ['Adulto'],
     estilo: 'Académico',
     voces: [],
+    franjaTematica: 'General',
     activo: true,
   },
   {
@@ -396,6 +413,7 @@ export const AUTORES_MOCK: Autor[] = [
     publico: ['Adulto joven', 'Adulto'],
     estilo: 'Literario/Experimental',
     voces: ['Autoras mujeres', 'Voces indígenas y afro'],
+    franjaTematica: 'General',
     activo: true,
   },
   {
@@ -417,6 +435,7 @@ export const AUTORES_MOCK: Autor[] = [
     publico: ['Adulto joven', 'Adulto'],
     estilo: 'Literario/Experimental',
     voces: [],
+    franjaTematica: 'General',
     activo: true,
   },
   {
@@ -438,6 +457,7 @@ export const AUTORES_MOCK: Autor[] = [
     publico: ['Adulto joven', 'Adulto'],
     estilo: 'Académico',
     voces: ['Autoras mujeres', 'Autores jóvenes/emergentes'],
+    franjaTematica: 'General',
     activo: true,
   },
 ];
