@@ -152,19 +152,14 @@ export function Agenda() {
               <line x1="15.4" y1="6.5" x2="8.6" y2="10.5" />
             </svg>
           </button>
-          {/*
-            "Programación" enlaza al programa completo de la feria. La URL
-            todavía no está definida, así que el botón queda deshabilitado en
-            lugar de llevar a ninguna parte.
-            TODO: enlazar a la programación oficial cuando exista la URL.
-          */}
-          <button
-            type="button"
-            disabled
-            className="min-h-[48px] flex-1 cursor-not-allowed rounded-pill border-none bg-coral px-[6px] font-display text-[14px] font-bold text-burgundy opacity-60"
+          <a
+            href="https://feria-libro-17-programacion.vercel.app/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex min-h-[48px] flex-1 items-center justify-center rounded-pill border-none bg-coral px-[6px] text-center font-display text-[14px] font-bold text-burgundy no-underline"
           >
-            Programación
-          </button>
+            Ver Programación
+          </a>
         </div>
       ) : null}
     </div>
