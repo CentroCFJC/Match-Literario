@@ -155,7 +155,7 @@ function ResultadoListo() {
           <div className="flex flex-col gap-[10px]">
             <TarjetaEnlace
               titulo="Cuéntanos más"
-              subtitulo="Cuatro preguntas para mejorar la Feria · opcional"
+              subtitulo="Cinco preguntas para mejorar la Feria · opcional"
               onClick={() => abrirHojaExtra(true)}
             />
             <TarjetaEnlace
@@ -295,14 +295,14 @@ function CabeceraDestacado({ par }: { par: Par }) {
         <button
           type="button"
           onClick={() => abrirModalAutor(autor.id)}
-          className="min-h-[44px] rounded-pill border-none bg-cream-white px-[22px] font-display text-[14px] font-bold text-burgundy"
+          className="min-h-[44px] rounded-pill border-none bg-cream-white px-[22px] font-display text-[13px] font-bold text-burgundy"
         >
           Ver perfil
         </button>
         <button
           type="button"
           onClick={alternar}
-          className="inline-flex min-h-[44px] items-center gap-[7px] rounded-pill border-none px-[22px] font-display text-[14px] font-bold"
+          className="inline-flex min-h-[44px] items-center gap-[7px] rounded-pill border-none px-[22px] font-display text-[13px] font-bold"
           style={{
             background: anadido ? 'var(--color-yellow)' : 'var(--color-magenta)',
             color: anadido ? 'var(--color-burgundy)' : 'var(--color-cream-white)',

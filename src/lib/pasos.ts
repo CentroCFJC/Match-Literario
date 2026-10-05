@@ -1,10 +1,10 @@
 /**
- * Configuración de los 8 pasos del wizard.
+ * Configuración de los pasos 1 a 6 del wizard.
  *
  * Transcrita del diseño (`STEPS` en `Recomendador de Autores.dc.html`):
  * mismos títulos, mismos máximos, mismo layout, mismos gráficos decorativos.
- * El paso 8 ("Arma tu agenda") tiene pantalla propia porque agrupa dos
- * preguntas, así que aquí solo viven los pasos 1 a 7.
+ * El paso 7 ("Arma tu agenda") tiene pantalla propia porque agrupa dos
+ * preguntas, así que aquí no vive.
  */
 
 import {
@@ -13,7 +13,6 @@ import {
   GENEROS,
   MOOD,
   TEMATICAS,
-  TIPOS_ACTIVIDAD,
   VOCES_WILDCARD,
   VOCES_WIZARD,
 } from '@/lib/vocabulario';
@@ -25,8 +24,7 @@ export type ClavePaso =
   | 'tematicas'
   | 'estilo'
   | 'voces'
-  | 'edad'
-  | 'actividades';
+  | 'edad';
 
 export interface OpcionPaso {
   label: string;
@@ -132,25 +130,10 @@ export const PASOS: Paso[] = [
       margenSuperior: 16,
     },
   },
-  {
-    num: 7,
-    clave: 'actividades',
-    titulo: '¿Qué te interesa de la Feria?',
-    opciones: comoTexto(TIPOS_ACTIVIDAD),
-    unica: false,
-    max: 4,
-    layout: 'grid',
-    decoracion: {
-      src: '/graficos separados-15.png',
-      alineacion: 'flex-start',
-      ancho: 215,
-      margenSuperior: 12,
-    },
-  },
 ];
 
 /** Total de pasos que ve la persona, incluido "Arma tu agenda". */
-export const TOTAL_PASOS = 8;
+export const TOTAL_PASOS = 7;
 
 /** Texto de ayuda bajo el título, según el tipo de paso. */
 export function ayudaDelPaso(paso: Paso): string {

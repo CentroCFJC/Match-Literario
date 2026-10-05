@@ -24,15 +24,6 @@ export function aPerfilAutor(autor: Autor, actividadesDelAutor: readonly Activid
     // El primer género de la columna es el dominante: es el orden en que lo
     // escribió la curaduría, no un ranking calculado.
     generoDominante: autor.generos[0] ?? null,
-    // Los tipos de actividad no son una columna de `Autores`: se deducen de la
-    // programación, que es donde vive `tipo`.
-    tiposActividad: [
-      ...new Set(
-        actividadesDelAutor
-          .map((actividad) => actividad.tipo)
-          .filter((tipo): tipo is NonNullable<typeof tipo> => tipo !== null),
-      ),
-    ],
     franjasDisponibles: actividadesDelAutor.map((actividad) => ({
       fecha: actividad.fecha,
       franja: franjaDeMinutos(actividad.inicioMin),
@@ -81,7 +72,6 @@ export function aPerfilLector(seleccion: PerfilLector): PerfilLector {
     estilo: seleccion.estilo,
     voces: [...seleccion.voces],
     edad: seleccion.edad,
-    actividades: [...seleccion.actividades],
     dias: [...seleccion.dias],
     franjas: [...seleccion.franjas],
   };

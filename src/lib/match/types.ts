@@ -17,7 +17,6 @@ import type {
   Mood,
   Publico,
   Tematica,
-  TipoActividad,
   VozWizard,
 } from '@/lib/vocabulario';
 import type { CategoriaMatch } from './config';
@@ -32,8 +31,7 @@ export interface PerfilLector {
   voces: VozWizard[];
   /** Rango de edad del paso 6; el motor lo traduce a público con `EDAD_A_PUBLICO`. */
   edad: Edad | null;
-  actividades: TipoActividad[];
-  /** Fechas `YYYY-MM-DD` elegidas en el paso 8. */
+  /** Fechas `YYYY-MM-DD` elegidas en el paso 7. */
   dias: FechaISO[];
   franjas: Franja[];
 }
@@ -48,8 +46,6 @@ export interface PerfilAutor {
   voces: string[];
   /** Columna `publico` de la hoja: Infantil/Juvenil/Adulto joven/Adulto. */
   publico: Publico[];
-  /** Tipos de las actividades en las que participa. */
-  tiposActividad: TipoActividad[];
   /**
    * Columna `genero_autor`. NO entra en el puntaje de afinidad: solo se usa
    * para diversificar el ranking (§6.3 del prompt maestro).

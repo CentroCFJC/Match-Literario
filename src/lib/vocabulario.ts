@@ -92,7 +92,7 @@ export const TIPOS_ACTIVIDAD = [
   'Presentaciones de libros',
   'Actividades culturales',
   'Conversatorios',
-  'Feria Gráfica',
+  'Feria gráfica',
   'Talleres',
 ] as const;
 
@@ -139,7 +139,7 @@ export const VOCES_WILDCARD = 'Me da igual, sorpréndeme';
 export const EDADES = ['6-17', '18-28', '29-40', '41-60', '60+'] as const;
 
 /**
- * Paso 8. La hoja no tiene franjas: se derivan de `hora_inicio`.
+ * Paso 7. La hoja no tiene franjas: se derivan de `hora_inicio`.
  */
 export const FRANJAS = ['Mañana', 'Tarde', 'Noche'] as const;
 
@@ -452,7 +452,7 @@ export function etiquetaDia(fecha: FechaISO): string {
  * Fechas confirmadas: del **19 al 25 de octubre de 2026**, siete días. (El
  * prompt maestro §1 decía 31 ago – 6 sep, pero el evento se movió.)
  *
- * Esto es solo el respaldo para que el paso 8 no salga vacío mientras la
+ * Esto es solo el respaldo para que el paso 7 no salga vacío mientras la
  * curaduría programa las actividades: los días reales se derivan de
  * `Actividades.fecha`, como pide el §3.1. Si la feria vuelve a moverse y la
  * hoja ya tiene fechas, esta lista ni se usa.

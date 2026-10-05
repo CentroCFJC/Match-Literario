@@ -33,7 +33,7 @@ export function construirCuerpo(opciones: {
     moodSel: seleccion.mood,
     estiloSel: seleccion.estilo,
     vocesSel: seleccion.voces,
-    actividadesInteresSel: seleccion.actividades,
+    actividadesInteresSel: extra.actividadesInteres,
     diasAsistenciaSel: seleccion.dias,
     franjasSel: seleccion.franjas,
 

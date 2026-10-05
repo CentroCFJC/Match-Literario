@@ -33,7 +33,6 @@ const LECTORA: PerfilLector = {
   estilo: 'Accesible',
   voces: ['Autoras mujeres', 'Voces locales (Caldas/Manizales)'],
   edad: '29-40',
-  actividades: ['Conversatorios'],
   dias: ['2026-10-20', '2026-10-21'],
   franjas: ['Tarde'],
 };
@@ -100,7 +99,7 @@ describe('candidatosSerendipia', () => {
   it('no propone a nadie si la persona no respondió nada', () => {
     const sinRespuestas: PerfilLector = {
       mood: [], generos: [], tematicas: [], estilo: null, voces: [],
-      edad: null, actividades: [], dias: [], franjas: [],
+      edad: null, dias: [], franjas: [],
     };
     expect(candidatosSerendipia(sinRespuestas, PERFILES, new Set())).toEqual([]);
   });

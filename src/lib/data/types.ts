@@ -213,14 +213,14 @@ export interface Respuesta {
   estiloSel: Estilo | null;
   /** columna `voces_sel` — paso 5. Puede contener el comodín del wizard. */
   vocesSel: VozWizard[];
-  /** columna `actividades_interes_sel` — paso 7. */
+  /** columna `actividades_interes_sel` — pregunta de "Cuéntanos más". */
   actividadesInteresSel: TipoActividad[];
   /**
-   * columna `dias_asistencia_sel` — paso 8. Se guardan las fechas en
+   * columna `dias_asistencia_sel` — paso 7. Se guardan las fechas en
    * `YYYY-MM-DD`, no la etiqueta "31 ago": el panel las agrega por fecha.
    */
   diasAsistenciaSel: FechaISO[];
-  /** columna `franjas_sel` — paso 8. */
+  /** columna `franjas_sel` — paso 7. */
   franjasSel: Franja[];
 
   // --- Preguntas post-resultado (opcionales) -------------------------------

@@ -36,7 +36,7 @@ export interface DiaAgenda {
  * "de aquí se derivan los días del evento").
  *
  * Si la curaduría todavía no ha puesto fechas, cae a los siete días de la feria
- * para que el paso 8 no salga vacío.
+ * para que el paso 7 no salga vacío.
  */
 export function diasDelEvento(actividades: readonly Actividad[]): FechaISO[] {
   const fechas = [...new Set(actividades.map((actividad) => actividad.fecha))].sort();

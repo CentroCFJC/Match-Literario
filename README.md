@@ -1,6 +1,6 @@
 # Match Literario
 
-Webapp de la **17 Feria del Libro de Manizales**. Responde ocho preguntas rápidas
+Webapp de la **17 Feria del Libro de Manizales**. Responde siete preguntas rápidas
 sobre lo que te gusta leer y te arma una ruta a tu medida por la feria: autores
 afines y una agenda con sus actividades.
 
@@ -57,7 +57,7 @@ src/
     useEnviarRespuesta.ts       POST /api/respuestas
   lib/
     vocabulario.ts              ← espejo de la pestaña `Vocabulario` de la hoja
-    pasos.ts                    configuración de los 8 pasos del wizard
+    pasos.ts                    configuración de los pasos 1 a 6 del wizard
     agenda.ts                   días del evento, cruces de horario, compartir
     autores.ts                  iniciales, color de avatar, chips
     catalogo.ts                 carga de /api/catalogo en el cliente

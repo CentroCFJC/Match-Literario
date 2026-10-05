@@ -75,8 +75,8 @@ export function Bienvenida() {
             encuentra a tu autor/a afín
           </div>
           <p className="m-0 mt-4 max-w-[290px] text-pretty font-body text-[15px] leading-[1.5] text-text-muted">
-            Responde unas preguntas rápidas sobre lo que te gusta leer y te armamos una ruta a tu
-            medida por la Feria.
+            Responde unas preguntas rápidas sobre lo que te gusta leer y te armamos una
+            ruta por las presentaciones de libros de la feria.
           </p>
         </div>
 

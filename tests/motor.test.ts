@@ -30,7 +30,6 @@ const LECTORA: PerfilLector = {
   estilo: 'Accesible',
   voces: ['Autoras mujeres', 'Voces locales (Caldas/Manizales)'],
   edad: '29-40',
-  actividades: ['Conversatorios'],
   dias: ['2026-10-20', '2026-10-21'],
   franjas: ['Tarde'],
 };
@@ -42,7 +41,6 @@ const SIN_RESPUESTAS: PerfilLector = {
   estilo: null,
   voces: [],
   edad: null,
-  actividades: [],
   dias: [],
   franjas: [],
 };
@@ -91,8 +89,6 @@ describe('pesos y renormalización (§6.1)', () => {
     const desglose = calcularDesglose(LECTORA, PERFILES[0]);
     // temáticas 1.3 frente a géneros 1.0
     expect(desglose.tematicas.pesoEfectivo / desglose.generos.pesoEfectivo).toBeCloseTo(1.3);
-    // actividades 0.4 frente a público 0.6
-    expect(desglose.actividades.pesoEfectivo / desglose.publico.pesoEfectivo).toBeCloseTo(0.4 / 0.6);
   });
 
   it('omitir una categoría reparte su peso entre las demás', () => {
@@ -171,7 +167,6 @@ describe('similitudEntreAutores (§6.3)', () => {
     estilo: null,
     voces: [],
     publico: [],
-    tiposActividad: [],
     generoAutor: null,
     generoDominante: null,
     franjasDisponibles: [],
@@ -206,7 +201,6 @@ describe('seleccionarConMMR', () => {
     estilo: null,
     voces: [],
     publico: [],
-    tiposActividad: [],
     generoAutor: 'F',
     generoDominante,
     franjasDisponibles: [],

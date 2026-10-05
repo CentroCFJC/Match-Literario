@@ -120,7 +120,7 @@ function useHidratacion(): boolean {
 /**
  * Carga el catálogo al abrir la app, no al terminar el wizard.
  *
- * Hace falta antes de lo que parece: el paso 8 pregunta por los días de la
+ * Hace falta antes de lo que parece: el paso 7 pregunta por los días de la
  * feria, y esos días salen de las fechas de la programación. Además así el
  * match se calcula sin esperar a la red, que es lo que pide el prompt maestro
  * ("cero bloqueos por red").
@@ -215,7 +215,7 @@ function useRegistrarAbandono() {
       const enElWizard = estado.pantalla === 'wizard' || estado.pantalla === 'agendaPaso';
       if (empezo && enElWizard && !yaRegistrado.current) {
         yaRegistrado.current = true;
-        const paso = estado.pantalla === 'agendaPaso' ? 8 : estado.paso;
+        const paso = estado.pantalla === 'agendaPaso' ? 7 : estado.paso;
         const cuerpo = construirCuerpo({ completado: false, pasoAbandono: paso });
 
         navigator.sendBeacon?.(

@@ -7,14 +7,16 @@ import {
   COMO_SE_ENTERO,
   DONDE_LIBROS,
   ORIGENES_VISITANTE,
+  TIPOS_ACTIVIDAD,
   VISITA_PREVIA,
 } from '@/lib/vocabulario';
 import { useMatchStore } from '@/store/useMatchStore';
 
 /**
- * Pantalla 12: las cuatro preguntas opcionales de perfil.
+ * Pantalla 12: las cinco preguntas opcionales de perfil.
  * Alimentan las columnas `visita_previa`, `origen_visitante`,
- * `donde_consigue_libros` y `como_se_entero` de la hoja `Respuestas`.
+ * `donde_consigue_libros`, `como_se_entero` y `actividades_interes_sel` de la
+ * hoja `Respuestas`.
  */
 export function HojaCuentanosMas() {
   const extra = useMatchStore((e) => e.extra);
@@ -38,7 +40,7 @@ export function HojaCuentanosMas() {
       <div className="px-6 pb-[26px] pt-[22px]">
         <ManijaHoja />
         <h2 className="m-0 mb-5 text-balance font-display text-[21px] font-extrabold text-ink">
-          Cuatro preguntas rápidas para mejorar la Feria
+          Cinco preguntas rápidas para mejorar la Feria
         </h2>
 
         <div className="mb-[10px] font-display text-[15px] font-bold text-burgundy">
@@ -107,7 +109,7 @@ export function HojaCuentanosMas() {
           ¿Cómo te enteraste de la Feria?
         </div>
         <div
-          className="mb-[26px] flex flex-wrap gap-[9px]"
+          className="mb-[22px] flex flex-wrap gap-[9px]"
           role="radiogroup"
           aria-label="Cómo te enteraste"
         >
@@ -119,6 +121,30 @@ export function HojaCuentanosMas() {
               // La columna admite lista, pero el diseño pregunta por una sola vía.
               onClick={() =>
                 fijarExtra({ comoSeEntero: extra.comoSeEntero.includes(como) ? [] : [como] })
+              }
+            />
+          ))}
+        </div>
+
+        <div className="mb-[10px] font-display text-[15px] font-bold text-burgundy">
+          ¿Qué te interesa de la Feria?
+        </div>
+        <div
+          className="mb-[26px] flex flex-wrap gap-[9px]"
+          role="group"
+          aria-label="Qué te interesa de la Feria"
+        >
+          {TIPOS_ACTIVIDAD.map((tipo) => (
+            <Chip
+              key={tipo}
+              label={tipo}
+              seleccionado={extra.actividadesInteres.includes(tipo)}
+              onClick={() =>
+                fijarExtra({
+                  actividadesInteres: extra.actividadesInteres.includes(tipo)
+                    ? extra.actividadesInteres.filter((x) => x !== tipo)
+                    : [...extra.actividadesInteres, tipo],
+                })
               }
             />
           ))}

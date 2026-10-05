@@ -13,7 +13,7 @@ import { ayudaDelPaso, pasoPorNumero } from '@/lib/pasos';
 import { useMatchStore } from '@/store/useMatchStore';
 
 /**
- * Pasos 1 a 7 del wizard.
+ * Pasos 1 a 6 del wizard.
  *
  * Un solo componente los cubre todos: la diferencia entre pasos es
  * configuración (`src/lib/pasos.ts`), no código.
@@ -44,7 +44,7 @@ export function Wizard() {
       fijarUnico(config.clave as 'estilo' | 'edad', label);
     } else {
       alternarEnLista(
-        config.clave as 'mood' | 'generos' | 'tematicas' | 'voces' | 'actividades',
+        config.clave as 'mood' | 'generos' | 'tematicas' | 'voces',
         label,
         config.max,
         config.comodin,

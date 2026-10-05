@@ -10,7 +10,7 @@
  *   1. Vectorizar lector y autor por categoría (vectores binarios one-hot).
  *   2. Similitud coseno por categoría (afinidad tabulada en estilo y público).
  *   3. Combinar con los PESOS de §6.1, renormalizando si alguna se omite.
- *   4. Aplicar el bonus de disponibilidad (días/franjas del paso 8).
+ *   4. Aplicar el bonus de disponibilidad (días/franjas del paso 7).
  *   5. Calibrar el crudo a un porcentaje legible (§6.2).
  *   6. Diversificar el orden con MMR (§6.3).
  */
@@ -109,8 +109,6 @@ function categoriaOmitida(categoria: CategoriaMatch, lector: PerfilLector): bool
       return lector.estilo === null;
     case 'voces':
       return lector.voces.length === 0 || lector.voces.includes(VOCES_WILDCARD);
-    case 'actividades':
-      return lector.actividades.length === 0;
     case 'publico':
       return lector.edad === null;
   }
@@ -133,8 +131,6 @@ function similitudCategoria(
       return afinidadEstilo(lector.estilo, autor.estilo);
     case 'voces':
       return cosenoBinario(lector.voces, autor.voces);
-    case 'actividades':
-      return cosenoBinario(lector.actividades, autor.tiposActividad);
     case 'publico':
       return afinidadPublico(lector.edad, autor.publico);
   }
@@ -146,7 +142,7 @@ function similitudCategoria(
 
 /**
  * Cobertura de disponibilidad: qué fracción de las actividades del autor cae en
- * los días y franjas que la persona eligió en el paso 8.
+ * los días y franjas que la persona eligió en el paso 7.
  *
  * Si solo eligió días, se ignoran las franjas, y viceversa. Si no eligió nada,
  * devuelve 0 (sin bonus para nadie, que es neutral).

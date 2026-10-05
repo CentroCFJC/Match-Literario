@@ -57,11 +57,12 @@ export const esquemaRespuesta = z.object({
   moodSel: lista(deVocabulario(MOOD), 3),
   estiloSel: deVocabulario(ESTILO_LABELS).nullable(),
   vocesSel: lista(deVocabulario(VOCES_WIZARD), 3),
-  actividadesInteresSel: lista(deVocabulario(TIPOS_ACTIVIDAD), 4),
   diasAsistenciaSel: lista(zFecha, 31),
   franjasSel: lista(deVocabulario(FRANJAS), FRANJAS.length),
 
   // --- Preguntas post-resultado (opcionales) -------------------------------
+  /** Pregunta "¿Qué te interesa de la Feria?", ahora en "Cuéntanos más". */
+  actividadesInteresSel: lista(deVocabulario(TIPOS_ACTIVIDAD), TIPOS_ACTIVIDAD.length).default([]),
   origenVisitante: deVocabulario(ORIGENES_VISITANTE).nullable().default(null),
   dondeConsigueLibros: lista(deVocabulario(DONDE_LIBROS), DONDE_LIBROS.length).default([]),
   comoSeEntero: lista(deVocabulario(COMO_SE_ENTERO), COMO_SE_ENTERO.length).default([]),
@@ -75,8 +76,8 @@ export const esquemaRespuesta = z.object({
   conflictosDetectados: z.number().int().min(0).max(500).default(0),
   /** Tope de 24 h: más que eso es una pestaña olvidada abierta, no una sesión. */
   tiempoTotalSeg: z.number().int().min(0).max(86_400).default(0),
-  /** Paso 1-8 donde se fue, o `null` si terminó. */
-  pasoAbandono: z.number().int().min(1).max(8).nullable().default(null),
+  /** Paso 1-7 donde se fue, o `null` si terminó. */
+  pasoAbandono: z.number().int().min(1).max(7).nullable().default(null),
   completado: z.boolean().default(false),
 
   // --- Feedback ------------------------------------------------------------

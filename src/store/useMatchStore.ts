@@ -43,7 +43,7 @@ export type Pantalla =
 /** Estado de carga de la pantalla de resultado, tal como lo dibuja el diseño. */
 export type EstadoResultado = 'skeleton' | 'listo' | 'error';
 
-/** Todo lo que la persona seleccionó en los 8 pasos. */
+/** Todo lo que la persona seleccionó en los 7 pasos. */
 export interface SeleccionWizard {
   mood: Mood[];
   generos: Genero[];
@@ -51,8 +51,7 @@ export interface SeleccionWizard {
   estilo: Estilo | null;
   voces: VozWizard[];
   edad: Edad | null;
-  actividades: TipoActividad[];
-  /** Fechas `YYYY-MM-DD` del paso 8, derivadas de la programación. */
+  /** Fechas `YYYY-MM-DD` del paso 7, derivadas de la programación. */
   dias: FechaISO[];
   franjas: Franja[];
 }
@@ -63,6 +62,8 @@ export interface DatosExtra {
   origenVisitante: OrigenVisitante | null;
   dondeConsigueLibros: DondeLibros[];
   comoSeEntero: ComoSeEntero[];
+  /** ¿Qué te interesa de la Feria? — columna `actividades_interes_sel`. */
+  actividadesInteres: TipoActividad[];
 }
 
 /** Respuestas de la hoja opcional de feedback. */
@@ -79,7 +80,6 @@ const SELECCION_VACIA: SeleccionWizard = {
   estilo: null,
   voces: [],
   edad: null,
-  actividades: [],
   dias: [],
   franjas: [],
 };
@@ -89,6 +89,7 @@ const EXTRA_VACIO: DatosExtra = {
   origenVisitante: null,
   dondeConsigueLibros: [],
   comoSeEntero: [],
+  actividadesInteres: [],
 };
 
 const FEEDBACK_VACIO: DatosFeedback = {
@@ -119,7 +120,7 @@ interface EstadoMatch {
 
   // --- Navegación ---------------------------------------------------------
   pantalla: Pantalla;
-  /** Paso visible del wizard, 1 a 7. El 8 es la pantalla `agendaPaso`. */
+  /** Paso visible del wizard, 1 a 6. El 7 es la pantalla `agendaPaso`. */
   paso: number;
 
   // --- Respuestas ---------------------------------------------------------
@@ -244,12 +245,12 @@ export const useMatchStore = create<EstadoMatch>()(
 
       siguientePaso: () =>
         set((estado) =>
-          estado.paso >= 7 ? { pantalla: 'agendaPaso' as Pantalla } : { paso: estado.paso + 1 },
+          estado.paso >= 6 ? { pantalla: 'agendaPaso' as Pantalla } : { paso: estado.paso + 1 },
         ),
 
       pasoAnterior: () =>
         set((estado) => {
-          if (estado.pantalla === 'agendaPaso') return { pantalla: 'wizard', paso: 7 };
+          if (estado.pantalla === 'agendaPaso') return { pantalla: 'wizard', paso: 6 };
           if (estado.paso <= 1) return { pantalla: 'bienvenida', paso: 1 };
           return { paso: estado.paso - 1 };
         }),
@@ -396,7 +397,7 @@ export const useMatchStore = create<EstadoMatch>()(
     {
       // Clave versionada: si el esquema del store cambia, se sube el número y
       // las sesiones viejas se descartan solas en vez de romper la app.
-      name: 'match-literario-v2',
+      name: 'match-literario-v3',
       storage: createJSONStorage(() => localStorage),
       /**
        * El catálogo y el estado efímero de la UI quedan fuera a propósito: los

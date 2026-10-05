@@ -6,8 +6,8 @@ import { IconoFlechaIzquierda } from '@/components/ui/iconos';
 import { TOTAL_PASOS } from '@/lib/pasos';
 
 /**
- * Cabecera compartida por los 8 pasos: botón de volver, barra de progreso
- * animada y contador "3/08".
+ * Cabecera compartida por los 7 pasos: botón de volver, barra de progreso
+ * animada y contador "3/7".
  */
 
 interface CabeceraPasoProps {
@@ -47,7 +47,7 @@ export function CabeceraPaso({ numero, titulo, ayuda, onVolver }: CabeceraPasoPr
           />
         </div>
         <span className="flex-shrink-0 font-display text-[13px] font-bold text-text-muted">
-          {numero}/{String(TOTAL_PASOS).padStart(2, '0')}
+          {numero}/{TOTAL_PASOS}
         </span>
       </div>
       <h2 className="m-0 mb-1 text-balance font-display text-[25px] font-extrabold leading-[1.12] text-ink">

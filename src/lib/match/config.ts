@@ -19,7 +19,11 @@ import type { Estilo } from '@/lib/vocabulario';
  *
  * Valores literales del prompt maestro:
  *   tematicas 1.3 · mood 1.2 · voces 1.1 · generos 1.0 · estilo 0.8 ·
- *   publico 0.6 · actividades 0.4
+ *   publico 0.6
+ *
+ * La categoría `actividades` (0.4 en el prompt maestro) se retiró: la pregunta
+ * "¿Qué te interesa de la Feria?" vive ahora en la hoja opcional "Cuéntanos
+ * más", que se responde DESPUÉS del match, así que ya no puede alimentarlo.
  *
  * No suman 1 a propósito: son pesos relativos. `motor.ts` los normaliza
  * dividiendo entre la suma de las categorías vivas, así que las proporciones
@@ -43,8 +47,6 @@ export const PESOS = {
   estilo: 0.8,
   /** Paso 6 — edad de la persona frente a la columna `publico` del autor. */
   publico: 0.6,
-  /** Paso 7 — tipos de actividad que le interesan de la feria. */
-  actividades: 0.4,
 } as const satisfies Record<string, number>;
 
 export type CategoriaMatch = keyof typeof PESOS;
@@ -79,7 +81,7 @@ export const AFINIDAD_PUBLICO_POR_DISTANCIA = [1, 0.6, 0.3, 0.15] as const;
  * NO viene del prompt maestro.
  *
  * Bonificación por disponibilidad: cuánto puede subir el puntaje crudo un autor
- * cuyas actividades caen en los días y franjas que la persona eligió (paso 8).
+ * cuyas actividades caen en los días y franjas que la persona eligió (paso 7).
  * El prompt maestro usa esos datos para filtrar la ruta (§7.2) y para la curva
  * de aforo, no para el score; aquí además empujan suavemente el ranking.
  *
