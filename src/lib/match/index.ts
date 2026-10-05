@@ -24,6 +24,7 @@ export {
   SECCIONES_RESULTADO,
   SIMILITUD_AUTORES,
   TOTAL_RESULTADOS,
+  VOZ_FILTRO_DURO,
 } from './config';
 export type { CategoriaMatch } from './config';
 export {
@@ -37,6 +38,7 @@ export {
   coincidencias,
   cosenoBinario,
   elegirSerendipia,
+  filtroDuroVoces,
   puntajeCrudo,
   seleccionarConMMR,
   similitudEntreAutores,

@@ -44,6 +44,19 @@ import type {
 // ===========================================================================
 
 /**
+ * Un trozo de bio con su formato: el texto y si va en cursiva.
+ *
+ * Las bios de la hoja llevan palabras sueltas en cursiva (títulos, términos).
+ * Como el texto plano no puede transportar ese formato, cada bio viaja además
+ * partida en estos segmentos, que la UI renderiza en lugar del string plano
+ * cuando existen. Ver `cursivas.ts`.
+ */
+export interface SegmentoBio {
+  texto: string;
+  cursiva: boolean;
+}
+
+/**
  * Un autor o autora invitado a la feria.
  *
  * Encabezados de la fila 3, en su orden real:
@@ -69,6 +82,16 @@ export interface Autor {
   bioCorta: string;
   /** columna `bio_larga` — se muestra en el modal. Si va vacía se usa `bioCorta`. */
   bioLarga: string;
+  /**
+   * `bio_corta` partida en segmentos con cursivas, tal como la formateó la
+   * curaduría en la hoja. La UI lo usa en lugar de `bioCorta` cuando existe.
+   */
+  bioCortaSegmentos?: SegmentoBio[];
+  /**
+   * `bio_larga` en segmentos. Si la celda iba vacía, hereda los de `bioCorta`,
+   * igual que el texto plano.
+   */
+  bioLargaSegmentos?: SegmentoBio[];
   /**
    * columna `foto_url` — ya normalizada a una URL de imagen directa.
    * `null` si la celda está vacía o apunta a algo que no es una imagen (en la

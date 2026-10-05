@@ -13,6 +13,7 @@ import {
   IconoMas,
   IconoReiniciar,
 } from '@/components/ui/iconos';
+import { TextoConCursivas } from '@/components/ui/TextoConCursivas';
 import { useCalcularMatch } from '@/hooks/useCalcularMatch';
 import { useActualizarRespuesta } from '@/hooks/useEnviarRespuesta';
 import { chipsAutor, colorAvatar, iniciales, textoOrigen } from '@/lib/autores';
@@ -269,7 +270,7 @@ function CabeceraDestacado({ par }: { par: Par }) {
 
       {autor.bioCorta ? (
         <p className="m-0 mb-[14px] text-pretty font-body text-[14px] leading-[1.5] text-cream-white">
-          {autor.bioCorta}
+          <TextoConCursivas texto={autor.bioCorta} segmentos={autor.bioCortaSegmentos} />
         </p>
       ) : null}
 

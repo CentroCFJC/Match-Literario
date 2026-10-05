@@ -7,6 +7,9 @@
  *
  * El pipeline es:
  *
+ *   0. Aplicar el filtro duro de voces: si marcó "Autoras mujeres", solo
+ *      quedan autoras (genero_autor = F) antes de puntuar.
+ *
  *   1. Vectorizar lector y autor por categoría (vectores binarios one-hot).
  *   2. Similitud coseno por categoría (afinidad tabulada en estilo y público).
  *   3. Combinar con los PESOS de §6.1, renormalizando si alguna se omite.
@@ -31,6 +34,7 @@ import {
   PRIMER_PUESTO_SIN_MMR,
   SIMILITUD_AUTORES,
   TOTAL_RESULTADOS,
+  VOZ_FILTRO_DURO,
 } from './config';
 import type { CategoriaMatch } from './config';
 import type { DesglosePuntaje, PerfilAutor, PerfilLector, ResultadoMatch } from './types';
@@ -360,6 +364,26 @@ export function elegirSerendipia(
 }
 
 // ===========================================================================
+// Filtro duro de voces
+// ===========================================================================
+
+/**
+ * Aplica el filtro duro de "Autoras mujeres" (`VOZ_FILTRO_DURO`): si la
+ * persona la marcó en el paso 5, del catálogo solo quedan las autoras
+ * (columna `genero_autor` = F).
+ *
+ * Se aplica ANTES de puntuar, así que excluye también a la diversificación
+ * (MMR) y a los comodines de serendipia, no solo al ranking por afinidad.
+ */
+export function filtroDuroVoces(
+  lector: PerfilLector,
+  autores: readonly PerfilAutor[],
+): PerfilAutor[] {
+  if (!lector.voces.includes(VOZ_FILTRO_DURO)) return [...autores];
+  return autores.filter((autor) => autor.generoAutor === 'F');
+}
+
+// ===========================================================================
 // Entrada principal
 // ===========================================================================
 
@@ -390,7 +414,10 @@ export function calcularMatch(
   const cuantos = opciones.cuantos ?? TOTAL_RESULTADOS;
   const comodines = opciones.semilla ? (opciones.comodines ?? COMODINES_SERENDIPIA) : 0;
 
-  const puntuados = autores.map((autor) => {
+  // El filtro duro de voces se aplica antes de puntuar: quien no cumple no
+  // existe ni para el ranking, ni para MMR, ni para la serendipia.
+  const elegibles = filtroDuroVoces(lector, autores);
+  const puntuados = elegibles.map((autor) => {
     const desglose = calcularDesglose(lector, autor);
     const crudo = puntajeCrudo(lector, autor, desglose);
     return { autor, desglose, crudo };

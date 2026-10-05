@@ -11,6 +11,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { fusionarFilaRespuestas, indiceFilaPorSessionId } from '@/lib/data/actualizacion';
+import { runsASegmentos } from '@/lib/data/cursivas';
 import {
   conVozDeOrigen,
   filaAActividad,
@@ -443,5 +444,91 @@ describe('fusionarFilaRespuestas', () => {
 
     expect(fusionada[ENCABEZADOS_RESPUESTAS.indexOf('feedback_util')]).toBe('0');
     expect(fusionada[ENCABEZADOS_RESPUESTAS.indexOf('autor_faltante')]).toBe('Otro');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Cursivas de las bios (`textFormatRuns` de la hoja)
+// ---------------------------------------------------------------------------
+
+describe('runsASegmentos', () => {
+  it('sin runs devuelve un único segmento plano', () => {
+    expect(runsASegmentos('Una bio sin formato')).toEqual([
+      { texto: 'Una bio sin formato', cursiva: false },
+    ]);
+  });
+
+  it('convierte un run en cursiva del medio en dos segmentos', () => {
+    const runs = [{ startIndex: 0 }, { startIndex: 10, format: { italic: true } }];
+    expect(runsASegmentos('Autora de La casa que recuerda.', runs)).toEqual([
+      { texto: 'Autora de ', cursiva: false },
+      { texto: 'La casa que recuerda.', cursiva: true },
+    ]);
+  });
+
+  it('soporta cursiva al inicio seguida de texto normal', () => {
+    const runs = [{ startIndex: 0, format: { italic: true } }, { startIndex: 6 }];
+    expect(runsASegmentos('Cuerpo abierto es su primer libro.', runs)).toEqual([
+      { texto: 'Cuerpo', cursiva: true },
+      { texto: ' abierto es su primer libro.', cursiva: false },
+    ]);
+  });
+
+  it('soporta varios tramos en cursiva separados', () => {
+    const valor = 'Escribe crónica y también ensayo aquí.';
+    const runs = [
+      { startIndex: 0 },
+      { startIndex: 8, format: { italic: true } },
+      { startIndex: 15 },
+      { startIndex: 26, format: { italic: true } },
+      { startIndex: 32 },
+    ];
+    expect(runsASegmentos(valor, runs)).toEqual([
+      { texto: 'Escribe ', cursiva: false },
+      { texto: 'crónica', cursiva: true },
+      { texto: ' y también ', cursiva: false },
+      { texto: 'ensayo', cursiva: true },
+      { texto: ' aquí.', cursiva: false },
+    ]);
+  });
+
+  it('realinea los startIndex cuando la celda traía espacios de sobra', () => {
+    // En la hoja la celda es '  Hola mundo ': los índices de los runs
+    // cuentan esos dos espacios iniciales.
+    const runs = [{ startIndex: 0 }, { startIndex: 7, format: { italic: true } }];
+    expect(runsASegmentos('  Hola mundo ', runs)).toEqual([
+      { texto: 'Hola ', cursiva: false },
+      { texto: 'mundo', cursiva: true },
+    ]);
+  });
+
+  it('devuelve vacío para celdas vacías o de solo espacios', () => {
+    expect(runsASegmentos('')).toEqual([]);
+    expect(runsASegmentos('   ', [{ startIndex: 0, format: { italic: true } }])).toEqual([]);
+  });
+
+  it('tolera un run que caía en el espacio final recortado', () => {
+    const runs = [{ startIndex: 0 }, { startIndex: 4, format: { italic: true } }];
+    expect(runsASegmentos('Hola ', runs)).toEqual([{ texto: 'Hola', cursiva: false }]);
+  });
+});
+
+describe('cursivas en filaAAutor', () => {
+  it('sin runs la bio queda como un único segmento plano', () => {
+    const autor = filaAAutor(FILA_NONA)!;
+    expect(autor.bioCortaSegmentos).toEqual([{ texto: autor.bioCorta, cursiva: false }]);
+  });
+
+  it('parte la bio_corta según los runs y hereda segmentos si bio_larga va vacía', () => {
+    // 'Autora chilena de ' mide 18: la cursiva cubre 'Space Invaders'.
+    const autor = filaAAutor(FILA_NONA, {
+      bioCorta: [{ startIndex: 0 }, { startIndex: 18, format: { italic: true } }, { startIndex: 32 }],
+    })!;
+    expect(autor.bioCortaSegmentos).toEqual([
+      { texto: 'Autora chilena de ', cursiva: false },
+      { texto: 'Space Invaders', cursiva: true },
+      { texto: ' y La Dimensión Desconocida.', cursiva: false },
+    ]);
+    expect(autor.bioLargaSegmentos).toBe(autor.bioCortaSegmentos);
   });
 });

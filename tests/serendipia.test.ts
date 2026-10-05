@@ -31,7 +31,7 @@ const LECTORA: PerfilLector = {
   generos: ['Novela', 'Crónica/Periodismo'],
   tematicas: ['Feminismos y género', 'Historia y memoria'],
   estilo: 'Accesible',
-  voces: ['Autoras mujeres', 'Voces locales (Caldas/Manizales)'],
+  voces: ['Voces locales (Caldas/Manizales)', 'Voces latinoamericanas'],
   edad: '29-40',
   dias: ['2026-10-20', '2026-10-21'],
   franjas: ['Tarde'],

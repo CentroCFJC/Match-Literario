@@ -11,6 +11,7 @@ import {
   CALIBRACION,
   coberturaDisponibilidad,
   cosenoBinario,
+  filtroDuroVoces,
   seleccionarConMMR,
   similitudEntreAutores,
   TOTAL_RESULTADOS,
@@ -28,7 +29,7 @@ const LECTORA: PerfilLector = {
   generos: ['Novela', 'Crónica/Periodismo'],
   tematicas: ['Feminismos y género', 'Historia y memoria'],
   estilo: 'Accesible',
-  voces: ['Autoras mujeres', 'Voces locales (Caldas/Manizales)'],
+  voces: ['Voces locales (Caldas/Manizales)', 'Voces latinoamericanas'],
   edad: '29-40',
   dias: ['2026-10-20', '2026-10-21'],
   franjas: ['Tarde'],
@@ -304,5 +305,58 @@ describe('calcularMatch', () => {
     // mock; `getAutores` le añade "Voces locales (Caldas/Manizales)".
     const perfil = PERFILES.find((p) => p.id === 'AUT006')!;
     expect(perfil.voces).toContain('Voces locales (Caldas/Manizales)');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Filtro duro de "Autoras mujeres"
+// ---------------------------------------------------------------------------
+
+describe('filtro duro de "Autoras mujeres"', () => {
+  const CON_AUTORAS: PerfilLector = {
+    ...SIN_RESPUESTAS,
+    tematicas: ['Feminismos y género'],
+    voces: ['Autoras mujeres'],
+  };
+
+  it('deja en el catálogo solo a las autoras (genero_autor = F)', () => {
+    const autoras = filtroDuroVoces(CON_AUTORAS, PERFILES);
+    expect(autoras.length).toBeGreaterThan(0);
+    expect(autoras.every((a) => a.generoAutor === 'F')).toBe(true);
+    expect(autoras).toHaveLength(PERFILES.filter((p) => p.generoAutor === 'F').length);
+  });
+
+  it('sin la voz no filtra nada', () => {
+    const sinFiltro: PerfilLector = {
+      ...CON_AUTORAS,
+      voces: ['Voces latinoamericanas'],
+    };
+    expect(filtroDuroVoces(sinFiltro, PERFILES)).toHaveLength(PERFILES.length);
+  });
+
+  it('la voz filtra el match completo, comodines de serendipia incluidos', () => {
+    const resultados = calcularMatch(CON_AUTORAS, PERFILES, {
+      semilla: 'semilla-de-prueba',
+    });
+    expect(resultados.length).toBeGreaterThan(0);
+    for (const resultado of resultados) {
+      const autor = PERFILES.find((p) => p.id === resultado.autorId)!;
+      expect(autor.generoAutor).toBe('F');
+    }
+  });
+
+  it('filtra igual cuando la voz viene junto a otras voces', () => {
+    const conVarias: PerfilLector = {
+      ...CON_AUTORAS,
+      voces: ['Autoras mujeres', 'Voces colombianas'],
+    };
+    expect(filtroDuroVoces(conVarias, PERFILES)).toHaveLength(
+      PERFILES.filter((p) => p.generoAutor === 'F').length,
+    );
+  });
+
+  it('con un catálogo sin autoras el match sale vacío', () => {
+    const sinAutoras = PERFILES.filter((p) => p.generoAutor !== 'F');
+    expect(calcularMatch(CON_AUTORAS, sinAutoras)).toEqual([]);
   });
 });

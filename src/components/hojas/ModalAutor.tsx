@@ -6,6 +6,7 @@
 import { colorAvatar, etiquetasAutor, iniciales, textoOrigen } from '@/lib/autores';
 import { HojaInferior } from '@/components/ui/HojaInferior';
 import { IconoCerrar, IconoCheck, IconoFlechaDerecha, IconoMas } from '@/components/ui/iconos';
+import { TextoConCursivas } from '@/components/ui/TextoConCursivas';
 import { etiquetaDia, minutosAHora } from '@/lib/vocabulario';
 import { useMatchStore } from '@/store/useMatchStore';
 
@@ -36,11 +37,13 @@ export function ModalAutor() {
     ? resultado.coincidencias.slice(0, 4)
     : [...autor.tematicas, ...autor.generos].slice(0, 2);
 
-  // La bio larga solo se muestra para el autor destacado ("Tu match ideal es"):
-  // en su tarjeta ya se ve la corta, y "Ver perfil" es el único lugar donde
-  // amplía. Para el resto, el perfil se queda en la corta.
+  // El perfil siempre muestra la bio larga; la corta queda para la card del
+  // resultado. Si la celda iba vacía, el parseo ya hizo que `bioLarga` caiga
+  // a la corta (lo mismo con sus segmentos).
   const esDestacado = resultados[0]?.autorId === autor.id;
-  const bio = esDestacado ? autor.bioLarga || autor.bioCorta : autor.bioCorta;
+  const usaBioLarga = Boolean(autor.bioLarga);
+  const bio = usaBioLarga ? autor.bioLarga : autor.bioCorta;
+  const bioSegmentos = usaBioLarga ? autor.bioLargaSegmentos : autor.bioCortaSegmentos;
 
   return (
     <HojaInferior
@@ -76,7 +79,7 @@ export function ModalAutor() {
 
       <div className="px-6 pb-7 pt-[22px]">
         <p className="m-0 mb-5 text-pretty font-body text-[15px] leading-[1.55] text-ink">
-          {bio}
+          <TextoConCursivas texto={bio} segmentos={bioSegmentos} />
         </p>
 
         {/* El destacado ya lo muestra en la pantalla de resultado. */}

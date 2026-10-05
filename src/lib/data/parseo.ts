@@ -21,13 +21,17 @@ import {
   partirCelda,
 } from '@/lib/vocabulario';
 import type { Voz } from '@/lib/vocabulario';
+import { runsASegmentos } from './cursivas';
+import type { CursivasDeFila } from './cursivas';
 import type { Actividad, Autor } from './types';
 
 /**
  * Convierte una fila de `Autores` (19 celdas, A..S) en un `Autor`.
  * Devuelve `null` si la fila no es un autor utilizable.
+ * `cursivas` (opcional) trae los `textFormatRuns` de las dos columnas de bio
+ * para reflejar las cursivas que puso la curaduría en la hoja.
  */
-export function filaAAutor(fila: unknown[]): Autor | null {
+export function filaAAutor(fila: unknown[], cursivas?: CursivasDeFila | null): Autor | null {
   const celda = (i: number) => (fila[i] == null ? '' : String(fila[i]).trim());
 
   const id = celda(0);
@@ -39,8 +43,17 @@ export function filaAAutor(fila: unknown[]): Autor | null {
   const nombreVisible = celda(2) || nombreCompleto;
   if (!nombreVisible) return null;
 
-  const bioCorta = celda(6);
-  const bioLarga = celda(7) || bioCorta;
+  // Las bios se toman crudas (sin recortar) porque los `startIndex` de los
+  // runs de cursiva refieren al texto tal cual está en la celda; el recorte y
+  // la realineación viven en `runsASegmentos`.
+  const bioCortaCruda = fila[6] == null ? '' : String(fila[6]);
+  const bioCorta = bioCortaCruda.trim();
+  const bioLargaCruda = fila[7] == null ? '' : String(fila[7]);
+  const bioLarga = bioLargaCruda.trim() || bioCorta;
+  const bioCortaSegmentos = runsASegmentos(bioCortaCruda, cursivas?.bioCorta);
+  const bioLargaSegmentos = bioLargaCruda.trim()
+    ? runsASegmentos(bioLargaCruda, cursivas?.bioLarga)
+    : bioCortaSegmentos;
 
   const autor: Autor = {
     id,
@@ -51,6 +64,8 @@ export function filaAAutor(fila: unknown[]): Autor | null {
     origen: canonizar('origenAutor', celda(5)) as Autor['origen'],
     bioCorta,
     bioLarga,
+    bioCortaSegmentos,
+    bioLargaSegmentos,
     fotoUrl: normalizarFotoUrl(celda(8)),
     libroDestacado: celda(9),
     webORed: celda(10),

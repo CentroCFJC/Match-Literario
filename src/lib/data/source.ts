@@ -137,12 +137,29 @@ export async function getActividades(): Promise<Actividad[]> {
 /** Lectura real de autores, cacheada con `unstable_cache` y tag `catalogo`. */
 const getAutoresReales = unstable_cache(
   async (): Promise<Autor[]> => {
-    const { data } = await getSheets().spreadsheets.values.get({
+    // Se lee con `spreadsheets.get` + `includeGridData` porque la API de Values
+    // (`values.get`) no expone `textFormatRuns`, que es donde la hoja guarda las
+    // cursivas de las bios. La máscara de campos limita la respuesta a lo que
+    // usa el parseo: el valor visible de cada celda y los tramos en cursiva.
+    const { data } = await getSheets().spreadsheets.get({
       spreadsheetId: idAutores(),
-      range: RANGOS.autores,
+      ranges: [RANGOS.autores],
+      includeGridData: true,
+      fields:
+        'sheets(data(rowData(values(formattedValue,textFormatRuns(startIndex,format(italic))))))',
     });
-    return (data.values ?? [])
-      .map(filaAAutor)
+    const filas = data.sheets?.[0]?.data?.[0]?.rowData ?? [];
+    return filas
+      .map((fila) => {
+        const celdas = fila.values ?? [];
+        return filaAAutor(
+          celdas.map((celda) => celda?.formattedValue ?? ''),
+          {
+            bioCorta: celdas[6]?.textFormatRuns ?? null,
+            bioLarga: celdas[7]?.textFormatRuns ?? null,
+          },
+        );
+      })
       .filter((a): a is Autor => a !== null)
       .map(conVozDeOrigen);
   },

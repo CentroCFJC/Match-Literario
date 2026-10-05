@@ -191,3 +191,13 @@ export const COMODINES_SERENDIPIA = 2;
  * descubrimiento, es un match normal y entraría por afinidad.
  */
 export const MAX_TAGS_SERENDIPIA = 2;
+
+/**
+ * NO viene del prompt maestro.
+ *
+ * Voz que actúa como FILTRO DURO: si la persona la marca en el paso 5, el
+ * catálogo se restringe a autoras (columna `genero_autor` = F) antes de
+ * puntuar. No es un peso de afinidad: quien no cumple queda fuera del match,
+ * de la diversificación y de la serendipia.
+ */
+export const VOZ_FILTRO_DURO = 'Autoras mujeres';

@@ -19,6 +19,25 @@ import type { Actividad, Autor } from './types';
 /** Atajo: las bios de ejemplo son cortas, así que `bio_larga` repite la corta. */
 const bio = (texto: string) => ({ bioCorta: texto, bioLarga: texto });
 
+/**
+ * Igual que `bio`, pero con un tramo en cursiva: permite ver en desarrollo
+ * sin credenciales el render de los `textFormatRuns` de la hoja.
+ */
+const bioConCursiva = (antes: string, cursiva: string, despues: string) => {
+  const texto = `${antes}${cursiva}${despues}`;
+  const segmentos = [
+    { texto: antes, cursiva: false },
+    { texto: cursiva, cursiva: true },
+    { texto: despues, cursiva: false },
+  ];
+  return {
+    bioCorta: texto,
+    bioLarga: texto,
+    bioCortaSegmentos: segmentos,
+    bioLargaSegmentos: segmentos,
+  };
+};
+
 export const AUTORES_MOCK: Autor[] = [
   {
     id: 'AUT001',
@@ -27,8 +46,10 @@ export const AUTORES_MOCK: Autor[] = [
     generoAutor: 'F',
     pais: 'Colombia',
     origen: 'Local',
-    ...bio(
-      'Escritora manizaleña. Su obra explora la memoria doméstica y los mapas afectivos de la montaña, entre la novela y la crónica.',
+    ...bioConCursiva(
+      'Escritora manizaleña. Su obra explora ',
+      'la memoria doméstica',
+      ' y los mapas afectivos de la montaña, entre la novela y la crónica.',
     ),
     fotoUrl: null,
     libroDestacado: 'Cartografías de la intimidad',
@@ -181,8 +202,10 @@ export const AUTORES_MOCK: Autor[] = [
     generoAutor: 'M',
     pais: 'España',
     origen: 'Internacional',
-    ...bio(
-      'Autor de terror y suspenso. Le interesan las casas que recuerdan y los pueblos que callan.',
+    ...bioConCursiva(
+      'Autor de terror y suspenso. Le interesan ',
+      'las casas que recuerdan',
+      ' y los pueblos que callan.',
     ),
     fotoUrl: null,
     libroDestacado: 'La casa que recuerda',
