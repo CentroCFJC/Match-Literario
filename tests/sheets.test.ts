@@ -61,7 +61,6 @@ describe('filaAAutor', () => {
     expect(autor.generoAutor).toBe('F');
     expect(autor.pais).toBe('Chile');
     expect(autor.origen).toBe('Latinoamérica');
-    expect(autor.estilo).toBe('Accesible');
   });
 
   it('parte las celdas multivaluadas por coma, como las escribe el Apps Script', () => {
@@ -300,7 +299,6 @@ const RESPUESTA: Respuesta = {
   generosSel: ['Novela', 'Poesía'],
   tematicasSel: ['Historia y memoria'],
   moodSel: ['Emocionarme'],
-  estiloSel: 'Accesible',
   vocesSel: ['Autoras mujeres'],
   actividadesInteresSel: ['Conversatorios'],
   diasAsistenciaSel: ['2026-08-31', '2026-09-01'],
@@ -324,8 +322,8 @@ const RESPUESTA: Respuesta = {
 };
 
 describe('aFilaRespuestas', () => {
-  it('produce exactamente 28 celdas, una por encabezado', () => {
-    expect(ENCABEZADOS_RESPUESTAS).toHaveLength(28);
+  it('produce exactamente 27 celdas, una por encabezado', () => {
+    expect(ENCABEZADOS_RESPUESTAS).toHaveLength(27);
     expect(aFilaRespuestas(RESPUESTA)).toHaveLength(ENCABEZADOS_RESPUESTAS.length);
   });
 
@@ -377,7 +375,7 @@ describe('aFilaRespuestas', () => {
   });
 
   it('no deja ninguna celda como undefined', () => {
-    for (const celda of aFilaRespuestas({ ...RESPUESTA, edad: null, estiloSel: null })) {
+    for (const celda of aFilaRespuestas({ ...RESPUESTA, edad: null })) {
       expect(typeof celda).toBe('string');
     }
   });

@@ -4,7 +4,7 @@
  * Carga del catálogo en el cliente.
  *
  * Un único sitio que llama a `GET /api/catalogo`, deriva los días del evento y
- * los deja en el store. Lo usan tanto la carga inicial (el paso 7 necesita los
+ * los deja en el store. Lo usan tanto la carga inicial (el paso 6 necesita los
  * días antes de calcular nada) como el recálculo del match y el reintento de la
  * pantalla de error.
  */

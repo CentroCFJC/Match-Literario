@@ -31,7 +31,6 @@ export function construirCuerpo(opciones: {
     generosSel: seleccion.generos,
     tematicasSel: seleccion.tematicas,
     moodSel: seleccion.mood,
-    estiloSel: seleccion.estilo,
     vocesSel: seleccion.voces,
     actividadesInteresSel: extra.actividadesInteres,
     diasAsistenciaSel: seleccion.dias,

@@ -1,14 +1,13 @@
 /**
- * Configuración de los pasos 1 a 6 del wizard.
+ * Configuración de los pasos 1 a 5 del wizard.
  *
  * Transcrita del diseño (`STEPS` en `Recomendador de Autores.dc.html`):
  * mismos títulos, mismos máximos, mismo layout, mismos gráficos decorativos.
- * El paso 7 ("Arma tu agenda") tiene pantalla propia porque agrupa dos
+ * El paso 6 ("Arma tu agenda") tiene pantalla propia porque agrupa dos
  * preguntas, así que aquí no vive.
  */
 
 import {
-  ESTILOS,
   EDADES,
   GENEROS,
   MOOD,
@@ -22,13 +21,12 @@ export type ClavePaso =
   | 'mood'
   | 'generos'
   | 'tematicas'
-  | 'estilo'
   | 'voces'
   | 'edad';
 
 export interface OpcionPaso {
   label: string;
-  /** Subtítulo, solo en el layout de tarjetas (paso 4). */
+  /** Subtítulo, solo en el layout de tarjetas. */
   hint?: string;
 }
 
@@ -93,20 +91,6 @@ export const PASOS: Paso[] = [
   },
   {
     num: 4,
-    clave: 'estilo',
-    titulo: '¿Cómo te gusta leer?',
-    opciones: ESTILOS.map((estilo) => ({ label: estilo.label, hint: estilo.hint })),
-    unica: true,
-    layout: 'cards',
-    decoracion: {
-      src: '/graficos separados-12.png',
-      alineacion: 'flex-end',
-      ancho: 245,
-      margenSuperior: 18,
-    },
-  },
-  {
-    num: 5,
     clave: 'voces',
     titulo: '¿A quién te gustaría leer?',
     // Las 7 voces de la hoja más el comodín, que no es un tag de autor.
@@ -117,7 +101,7 @@ export const PASOS: Paso[] = [
     layout: 'grid',
   },
   {
-    num: 6,
+    num: 5,
     clave: 'edad',
     titulo: '¿Cuántos años tienes?',
     opciones: comoTexto(EDADES),
@@ -133,7 +117,7 @@ export const PASOS: Paso[] = [
 ];
 
 /** Total de pasos que ve la persona, incluido "Arma tu agenda". */
-export const TOTAL_PASOS = 7;
+export const TOTAL_PASOS = 6;
 
 /** Texto de ayuda bajo el título, según el tipo de paso. */
 export function ayudaDelPaso(paso: Paso): string {

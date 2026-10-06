@@ -41,7 +41,7 @@ export function Wizard() {
 
   const alElegir = (label: string) => {
     if (config.unica) {
-      fijarUnico(config.clave as 'estilo' | 'edad', label);
+      fijarUnico(config.clave as 'edad', label);
     } else {
       alternarEnLista(
         config.clave as 'mood' | 'generos' | 'tematicas' | 'voces',

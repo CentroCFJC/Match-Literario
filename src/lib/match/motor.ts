@@ -11,18 +11,17 @@
  *      quedan autoras (genero_autor = F) antes de puntuar.
  *
  *   1. Vectorizar lector y autor por categoría (vectores binarios one-hot).
- *   2. Similitud coseno por categoría (afinidad tabulada en estilo y público).
+ *   2. Similitud coseno por categoría (afinidad tabulada en público).
  *   3. Combinar con los PESOS de §6.1, renormalizando si alguna se omite.
- *   4. Aplicar el bonus de disponibilidad (días/franjas del paso 7).
+ *   4. Aplicar el bonus de disponibilidad (días/franjas del paso 6).
  *   5. Calibrar el crudo a un porcentaje legible (§6.2).
  *   6. Diversificar el orden con MMR (§6.3).
  */
 
 import { EDAD_A_PUBLICO, PUBLICO, VOCES_WILDCARD } from '@/lib/vocabulario';
-import type { Edad, Estilo, Publico } from '@/lib/vocabulario';
+import type { Edad, Publico } from '@/lib/vocabulario';
 import { barajar, generadorAleatorio, semillaDesdeTexto } from './aleatorio';
 import {
-  AFINIDAD_ESTILO,
   AFINIDAD_PUBLICO_POR_DISTANCIA,
   BONUS_DISPONIBILIDAD_MAX,
   CALIBRACION,
@@ -65,12 +64,6 @@ export function cosenoBinario(a: readonly string[], b: readonly string[]): numbe
   return interseccion / (normaA * normaB);
 }
 
-/** Afinidad entre el estilo pedido y el del autor (tabla `AFINIDAD_ESTILO`). */
-export function afinidadEstilo(lector: Estilo | null, autor: Estilo | null): number {
-  if (!lector || !autor) return 0;
-  return AFINIDAD_ESTILO[lector]?.[autor] ?? 0;
-}
-
 /**
  * Afinidad de público: distancia mínima, en posiciones del vocabulario
  * `PUBLICO`, entre el público que le corresponde a la persona por su edad y los
@@ -109,8 +102,6 @@ function categoriaOmitida(categoria: CategoriaMatch, lector: PerfilLector): bool
       return lector.generos.length === 0;
     case 'tematicas':
       return lector.tematicas.length === 0;
-    case 'estilo':
-      return lector.estilo === null;
     case 'voces':
       return lector.voces.length === 0 || lector.voces.includes(VOCES_WILDCARD);
     case 'publico':
@@ -131,8 +122,6 @@ function similitudCategoria(
       return cosenoBinario(lector.generos, autor.generos);
     case 'tematicas':
       return cosenoBinario(lector.tematicas, autor.tematicas);
-    case 'estilo':
-      return afinidadEstilo(lector.estilo, autor.estilo);
     case 'voces':
       return cosenoBinario(lector.voces, autor.voces);
     case 'publico':
@@ -146,7 +135,7 @@ function similitudCategoria(
 
 /**
  * Cobertura de disponibilidad: qué fracción de las actividades del autor cae en
- * los días y franjas que la persona eligió en el paso 7.
+ * los días y franjas que la persona eligió en el paso 6.
  *
  * Si solo eligió días, se ignoran las franjas, y viceversa. Si no eligió nada,
  * devuelve 0 (sin bonus para nadie, que es neutral).
@@ -314,7 +303,6 @@ export function coincidencias(lector: PerfilLector, autor: PerfilAutor): string[
     ),
     ...encomun(lector.mood, autor.mood),
   ];
-  if (lector.estilo && lector.estilo === autor.estilo) salida.push(lector.estilo);
   return [...new Set(salida)];
 }
 

@@ -164,7 +164,8 @@ bio_corta | bio_larga | foto_url | libro_destacado | web_o_red |
 generos | tematicas | mood | publico | estilo | voces | franja_tematica | activo
 ```
 
-- `estilo` es **un solo valor** (desplegable), no una lista.
+- `estilo` existe en la hoja pero la app **ya no lo lee**: se retiró del
+  match y del wizard (oct 2026).
 - `publico` usa su propio vocabulario: Infantil / Juvenil / Adulto joven / Adulto.
 - `genero_autor` (F/M/No binario/Colectivo) **no puntúa afinidad**: solo
   diversifica el ranking (§6.3 del prompt maestro).
@@ -188,7 +189,7 @@ hora_fin | lugar | descripcion | activo
   programación. Si no hay ninguna todavía, cae a los siete días de la feria.
 - `hora_inicio`/`hora_fin` en `HH:MM` 24h; en memoria, minutos desde medianoche.
 
-### `Respuestas` (28 columnas)
+### `Respuestas` (27 columnas)
 
 El orden exacto está en `ENCABEZADOS_RESPUESTAS`, y hay un test que falla si
 `aFilaRespuestas` se desalinea.
@@ -204,8 +205,8 @@ Detalles que importan:
   sería un fingerprint y el prompt maestro lo prohíbe.
 - Una sesión es **una sola fila**: el `POST` la crea y el `PATCH` la actualiza
   (upsert por `session_id`). Ya no existe la pestaña `Feedback`: el feedback vive
-  en las columnas 21-23 de `Respuestas`.
-- **`visita_previa`** (columna 28, `AB`) se añadió el 9 sep 2026 y va **al
+  en las columnas 20-22 de `Respuestas`.
+- **`visita_previa`** (columna 27, `AA`) se añadió el 9 sep 2026 y va **al
   final**, no junto a `origen_visitante`/`donde_consigue_libros`/
   `como_se_entero`: insertarla en medio habría desalineado las filas que la
   hoja ya tenía escritas. Guarda `Sí`/`No`/vacío. Ver §11.
@@ -289,7 +290,7 @@ que esto sigue pendiente). 126 tests en verde, typecheck y lint limpios.
 **Los siete puntos del test:**
 
 1. Capitalización de "Feria" como nombre propio en todos los textos donde
-   aparecía en minúscula (bienvenida, paso 7 del wizard, pantalla de
+   aparecía en minúscula (bienvenida, paso 6 del wizard, pantalla de
    cálculo, paso 8/agenda, hoja de compartir, metadescripción).
 2. **Rangos etarios** cambiaron de `13-17 / 18-25 / 26-40 / 41-60 / 60+` a
    `6-17 / 18-28 / 29-40 / 41-60 / 60+` (`src/lib/vocabulario.ts`,

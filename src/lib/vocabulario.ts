@@ -8,7 +8,7 @@
  *
  * Las nueve columnas de esa pestaña, en su orden:
  *   Géneros literarios · Temáticas · Mood (experiencia lectora) · Público ·
- *   Estilo · Voces · Tipos de actividad · Género del autor/a · Origen
+ *   Voces · Tipos de actividad · Género del autor/a · Origen
  *
  * Si la curaduría añade un valor allí, hay que añadirlo aquí. La hoja avisa de
  * ello en su propio encabezado ("Avise al equipo de desarrollo antes de
@@ -67,15 +67,6 @@ export const MOOD = [
 
 /** Columna `publico` de `Autores`: a qué público apunta la obra del autor. */
 export const PUBLICO = ['Infantil', 'Juvenil', 'Adulto joven', 'Adulto'] as const;
-
-/** Columna `estilo` de `Autores`. En la hoja es un desplegable de UN solo valor. */
-export const ESTILOS = [
-  { label: 'Accesible', hint: 'lo que ya disfruto' },
-  { label: 'Literario/Experimental', hint: 'cosas raras, que me reten' },
-  { label: 'Académico', hint: 'con rigor y profundidad' },
-] as const;
-
-export const ESTILO_LABELS: readonly string[] = ESTILOS.map((e) => e.label);
 
 export const VOCES = [
   'Autoras mujeres',
@@ -183,7 +174,6 @@ export type Genero = (typeof GENEROS)[number];
 export type Tematica = (typeof TEMATICAS)[number];
 export type Mood = (typeof MOOD)[number];
 export type Publico = (typeof PUBLICO)[number];
-export type Estilo = (typeof ESTILOS)[number]['label'];
 export type Voz = (typeof VOCES)[number];
 export type VozWizard = (typeof VOCES_WIZARD)[number];
 export type TipoActividad = (typeof TIPOS_ACTIVIDAD)[number];
@@ -266,7 +256,6 @@ const INDICES = {
   tematicas: construirIndice(TEMATICAS),
   mood: construirIndice(MOOD),
   publico: construirIndice(PUBLICO),
-  estilo: construirIndice(ESTILO_LABELS),
   voces: construirIndice(VOCES),
   vocesWizard: construirIndice(VOCES_WIZARD),
   tiposActividad: construirIndice(TIPOS_ACTIVIDAD),
@@ -452,7 +441,7 @@ export function etiquetaDia(fecha: FechaISO): string {
  * Fechas confirmadas: del **19 al 25 de octubre de 2026**, siete días. (El
  * prompt maestro §1 decía 31 ago – 6 sep, pero el evento se movió.)
  *
- * Esto es solo el respaldo para que el paso 7 no salga vacío mientras la
+ * Esto es solo el respaldo para que el paso 6 no salga vacío mientras la
  * curaduría programa las actividades: los días reales se derivan de
  * `Actividades.fecha`, como pide el §3.1. Si la feria vuelve a moverse y la
  * hoja ya tiene fechas, esta lista ni se usa.

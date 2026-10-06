@@ -28,7 +28,6 @@ const LECTORA: PerfilLector = {
   mood: ['Conectar con mis raíces', 'Emocionarme'],
   generos: ['Novela', 'Crónica/Periodismo'],
   tematicas: ['Feminismos y género', 'Historia y memoria'],
-  estilo: 'Accesible',
   voces: ['Voces locales (Caldas/Manizales)', 'Voces latinoamericanas'],
   edad: '29-40',
   dias: ['2026-10-20', '2026-10-21'],
@@ -39,7 +38,6 @@ const SIN_RESPUESTAS: PerfilLector = {
   mood: [],
   generos: [],
   tematicas: [],
-  estilo: null,
   voces: [],
   edad: null,
   dias: [],
@@ -165,7 +163,6 @@ describe('similitudEntreAutores (§6.3)', () => {
     mood: [],
     generos: [],
     tematicas: [],
-    estilo: null,
     voces: [],
     publico: [],
     generoAutor: null,
@@ -199,7 +196,6 @@ describe('seleccionarConMMR', () => {
     mood: [],
     generos: generoDominante ? [generoDominante] : [],
     tematicas: [],
-    estilo: null,
     voces: [],
     publico: [],
     generoAutor: 'F',
@@ -271,7 +267,6 @@ describe('calcularMatch', () => {
       ...LECTORA.generos,
       ...LECTORA.tematicas,
       ...LECTORA.voces,
-      ...(LECTORA.estilo ? [LECTORA.estilo] : []),
     ];
     for (const coincidencia of principal.coincidencias) {
       expect(respondidas).toContain(coincidencia);
@@ -294,7 +289,6 @@ describe('calcularMatch', () => {
       ...SIN_RESPUESTAS,
       generos: ['Ensayo'],
       tematicas: ['Ciencia y tecnología'],
-      estilo: 'Académico',
       edad: '41-60',
     };
     expect(calcularMatch(cientifico, PERFILES)[0].autorId).not.toBe('AUT001');

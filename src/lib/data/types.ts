@@ -22,7 +22,6 @@ import type {
   ComoSeEntero,
   DondeLibros,
   Edad,
-  Estilo,
   FechaISO,
   Franja,
   FranjaTematica,
@@ -114,8 +113,6 @@ export interface Autor {
   mood: Mood[];
   /** columna `publico` — vocabulario: PUBLICO (Infantil/Juvenil/Adulto joven/Adulto). */
   publico: Publico[];
-  /** columna `estilo` — en la hoja es un desplegable de UN valor. */
-  estilo: Estilo | null;
   /**
    * columna `voces` — vocabulario: VOCES.
    * Al leer se le añade la voz que implica `origen` (ver `ORIGEN_A_VOZ`), para
@@ -199,10 +196,10 @@ export type FeedbackUtil = 1 | 0 | null;
 /**
  * Una fila de `Respuestas`: una sesión.
  *
- * Encabezados de la fila 2, en su orden real (28 columnas, A..AB):
+ * Encabezados de la fila 2, en su orden real (27 columnas, A..AA):
  *
  *   timestamp | session_id | dispositivo | edad | generos_sel | tematicas_sel |
- *   mood_sel | estilo_sel | voces_sel | actividades_interes_sel |
+ *   mood_sel | voces_sel | actividades_interes_sel |
  *   dias_asistencia_sel | franjas_sel | origen_visitante |
  *   donde_consigue_libros | como_se_entero | match_top_ids |
  *   autores_click_ids | autores_ruta_ids | n_autores_ruta |
@@ -232,18 +229,16 @@ export interface Respuesta {
   tematicasSel: Tematica[];
   /** columna `mood_sel` — paso 1. */
   moodSel: Mood[];
-  /** columna `estilo_sel` — paso 4. */
-  estiloSel: Estilo | null;
   /** columna `voces_sel` — paso 5. Puede contener el comodín del wizard. */
   vocesSel: VozWizard[];
   /** columna `actividades_interes_sel` — pregunta de "Cuéntanos más". */
   actividadesInteresSel: TipoActividad[];
   /**
-   * columna `dias_asistencia_sel` — paso 7. Se guardan las fechas en
+   * columna `dias_asistencia_sel` — paso 6. Se guardan las fechas en
    * `YYYY-MM-DD`, no la etiqueta "31 ago": el panel las agrega por fecha.
    */
   diasAsistenciaSel: FechaISO[];
-  /** columna `franjas_sel` — paso 7. */
+  /** columna `franjas_sel` — paso 6. */
   franjasSel: Franja[];
 
   // --- Preguntas post-resultado (opcionales) -------------------------------

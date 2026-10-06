@@ -30,7 +30,6 @@ const LECTORA: PerfilLector = {
   mood: ['Conectar con mis raíces', 'Emocionarme'],
   generos: ['Novela', 'Crónica/Periodismo'],
   tematicas: ['Feminismos y género', 'Historia y memoria'],
-  estilo: 'Accesible',
   voces: ['Voces locales (Caldas/Manizales)', 'Voces latinoamericanas'],
   edad: '29-40',
   dias: ['2026-10-20', '2026-10-21'],
@@ -81,7 +80,6 @@ describe('candidatosSerendipia', () => {
         ...LECTORA.generos.filter((g) => autor.generos.includes(g)),
         ...LECTORA.voces.filter((v) => autor.voces.includes(v)),
         ...LECTORA.mood.filter((m) => autor.mood.includes(m)),
-        ...(LECTORA.estilo === autor.estilo && LECTORA.estilo ? [LECTORA.estilo] : []),
       ];
       const unicos = new Set(comunes).size;
       expect(unicos).toBeGreaterThanOrEqual(1);
@@ -98,7 +96,7 @@ describe('candidatosSerendipia', () => {
 
   it('no propone a nadie si la persona no respondió nada', () => {
     const sinRespuestas: PerfilLector = {
-      mood: [], generos: [], tematicas: [], estilo: null, voces: [],
+      mood: [], generos: [], tematicas: [], voces: [],
       edad: null, dias: [], franjas: [],
     };
     expect(candidatosSerendipia(sinRespuestas, PERFILES, new Set())).toEqual([]);

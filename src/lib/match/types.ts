@@ -9,7 +9,6 @@
 
 import type {
   Edad,
-  Estilo,
   FechaISO,
   Franja,
   Genero,
@@ -26,12 +25,11 @@ export interface PerfilLector {
   mood: Mood[];
   generos: Genero[];
   tematicas: Tematica[];
-  estilo: Estilo | null;
   /** Puede incluir el comodín "Me da igual, sorpréndeme". */
   voces: VozWizard[];
   /** Rango de edad del paso 6; el motor lo traduce a público con `EDAD_A_PUBLICO`. */
   edad: Edad | null;
-  /** Fechas `YYYY-MM-DD` elegidas en el paso 7. */
+  /** Fechas `YYYY-MM-DD` elegidas en el paso 6. */
   dias: FechaISO[];
   franjas: Franja[];
 }
@@ -42,7 +40,6 @@ export interface PerfilAutor {
   mood: Mood[];
   generos: Genero[];
   tematicas: Tematica[];
-  estilo: Estilo | null;
   voces: string[];
   /** Columna `publico` de la hoja: Infantil/Juvenil/Adulto joven/Adulto. */
   publico: Publico[];

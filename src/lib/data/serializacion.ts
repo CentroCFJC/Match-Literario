@@ -18,7 +18,7 @@ const lista = (valores: readonly string[]) => valores.join('; ');
 const booleano = (valor: boolean) => (valor ? 'TRUE' : 'FALSE');
 
 /**
- * Serializa una `Respuesta` a las 28 celdas de la fila, EN EL ORDEN EXACTO de
+ * Serializa una `Respuesta` a las 27 celdas de la fila, EN EL ORDEN EXACTO de
  * los encabezados de la hoja. Pásalo tal cual a `values.append`.
  */
 export function aFilaRespuestas(respuesta: Respuesta): string[] {
@@ -30,7 +30,6 @@ export function aFilaRespuestas(respuesta: Respuesta): string[] {
     lista(respuesta.generosSel),
     lista(respuesta.tematicasSel),
     lista(respuesta.moodSel),
-    respuesta.estiloSel ?? '',
     lista(respuesta.vocesSel),
     lista(respuesta.actividadesInteresSel),
     lista(respuesta.diasAsistenciaSel),
@@ -72,7 +71,6 @@ export const ENCABEZADOS_RESPUESTAS = [
   'generos_sel',
   'tematicas_sel',
   'mood_sel',
-  'estilo_sel',
   'voces_sel',
   'actividades_interes_sel',
   'dias_asistencia_sel',

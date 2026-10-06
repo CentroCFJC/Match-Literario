@@ -12,7 +12,6 @@ export {
 } from './adaptador';
 export { barajar, generadorAleatorio, semillaDesdeTexto } from './aleatorio';
 export {
-  AFINIDAD_ESTILO,
   AFINIDAD_PUBLICO_POR_DISTANCIA,
   BONUS_DISPONIBILIDAD_MAX,
   CALIBRACION,
@@ -28,7 +27,6 @@ export {
 } from './config';
 export type { CategoriaMatch } from './config';
 export {
-  afinidadEstilo,
   afinidadPublico,
   calcularDesglose,
   calcularMatch,

@@ -22,7 +22,7 @@ const ESQUELETO_MS = 700;
 /**
  * Los temporizadores viven a nivel de módulo, NO en un `useRef`.
  *
- * Quien dispara el cálculo es el paso 7, que se desmonta en cuanto se va a la
+ * Quien dispara el cálculo es el paso 6, que se desmonta en cuanto se va a la
  * pantalla "Calculando…". Si los temporizadores colgaran del componente, su
  * limpieza al desmontar cancelaría la transición a resultados y la app se
  * quedaría congelada en la animación para siempre.

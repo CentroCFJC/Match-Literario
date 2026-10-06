@@ -12,13 +12,12 @@
  * sección. Lo que NO viene del prompt maestro está marcado como tal.
  */
 
-import type { Estilo } from '@/lib/vocabulario';
 
 /**
  * §6.1 — Peso de cada categoría de tags.
  *
  * Valores literales del prompt maestro:
- *   tematicas 1.3 · mood 1.2 · voces 1.1 · generos 1.0 · estilo 0.8 ·
+ *   tematicas 1.3 · mood 1.2 · voces 1.1 · generos 1.0 ·
  *   publico 0.6
  *
  * La categoría `actividades` (0.4 en el prompt maestro) se retiró: la pregunta
@@ -43,8 +42,6 @@ export const PESOS = {
   voces: 1.1,
   /** Paso 2 — géneros. */
   generos: 1.0,
-  /** Paso 4 — estilo de lectura. */
-  estilo: 0.8,
   /** Paso 6 — edad de la persona frente a la columna `publico` del autor. */
   publico: 0.6,
 } as const satisfies Record<string, number>;
@@ -52,19 +49,6 @@ export const PESOS = {
 export type CategoriaMatch = keyof typeof PESOS;
 
 export const CATEGORIAS_MATCH = Object.keys(PESOS) as CategoriaMatch[];
-
-/**
- * NO viene del prompt maestro.
- *
- * Afinidad entre estilos de lectura. El prompt maestro describe `estilo` como
- * una escala ("de lo que ya disfruto a cosas raras y experimentales", §5.4), y
- * una escala pide que los extremos no queden a cero entre sí. 1 = mismo estilo.
- */
-export const AFINIDAD_ESTILO: Record<Estilo, Record<Estilo, number>> = {
-  'Accesible': { 'Accesible': 1, 'Literario/Experimental': 0.3, 'Académico': 0.15 },
-  'Literario/Experimental': { 'Accesible': 0.3, 'Literario/Experimental': 1, 'Académico': 0.4 },
-  'Académico': { 'Accesible': 0.15, 'Literario/Experimental': 0.4, 'Académico': 1 },
-};
 
 /**
  * NO viene del prompt maestro.
@@ -81,7 +65,7 @@ export const AFINIDAD_PUBLICO_POR_DISTANCIA = [1, 0.6, 0.3, 0.15] as const;
  * NO viene del prompt maestro.
  *
  * Bonificación por disponibilidad: cuánto puede subir el puntaje crudo un autor
- * cuyas actividades caen en los días y franjas que la persona eligió (paso 7).
+ * cuyas actividades caen en los días y franjas que la persona eligió (paso 6).
  * El prompt maestro usa esos datos para filtrar la ruta (§7.2) y para la curva
  * de aforo, no para el score; aquí además empujan suavemente el ranking.
  *

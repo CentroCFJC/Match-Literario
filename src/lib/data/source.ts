@@ -66,10 +66,10 @@ export const RANGOS = {
   autores: 'Autores!A4:S',
   /** Lectura: 10 columnas, A..J, desde la fila 3. */
   actividades: 'Actividades!A3:J',
-  /** Escritura (append): 28 columnas, A..AB. */
-  respuestas: 'Respuestas!A:AB',
-  /** Lectura para localizar la fila a actualizar: 28 columnas, datos desde la fila 4. */
-  respuestasDatos: 'Respuestas!A4:AB',
+  /** Escritura (append): 27 columnas, A..AA. */
+  respuestas: 'Respuestas!A:AA',
+  /** Lectura para localizar la fila a actualizar: 27 columnas, datos desde la fila 4. */
+  respuestasDatos: 'Respuestas!A4:AA',
 } as const;
 
 /** Primera fila con datos reales en la pestaña `Respuestas` (ver geometría arriba). */
@@ -279,7 +279,7 @@ export async function updateRespuesta(
   await conReintento(() =>
     getSheets().spreadsheets.values.update({
       spreadsheetId: idRespuestas(),
-      range: `Respuestas!A${filaHoja}:AB${filaHoja}`,
+      range: `Respuestas!A${filaHoja}:AA${filaHoja}`,
       valueInputOption: 'RAW',
       requestBody: { values: [fusionada] },
     }),

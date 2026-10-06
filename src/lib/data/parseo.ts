@@ -73,7 +73,6 @@ export function filaAAutor(fila: unknown[], cursivas?: CursivasDeFila | null): A
     tematicas: canonizarLista('tematicas', partirCelda(celda(12))) as Autor['tematicas'],
     mood: canonizarLista('mood', partirCelda(celda(13))) as Autor['mood'],
     publico: canonizarLista('publico', partirCelda(celda(14))) as Autor['publico'],
-    estilo: canonizar('estilo', celda(15)) as Autor['estilo'],
     voces: canonizarLista('voces', partirCelda(celda(16))) as Autor['voces'],
     franjaTematica: canonizar('franjasTematicas', celda(17)) as Autor['franjaTematica'],
     activo: true,

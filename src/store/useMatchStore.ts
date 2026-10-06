@@ -19,7 +19,6 @@ import type {
   ComoSeEntero,
   DondeLibros,
   Edad,
-  Estilo,
   FechaISO,
   Franja,
   Genero,
@@ -43,15 +42,14 @@ export type Pantalla =
 /** Estado de carga de la pantalla de resultado, tal como lo dibuja el diseño. */
 export type EstadoResultado = 'skeleton' | 'listo' | 'error';
 
-/** Todo lo que la persona seleccionó en los 7 pasos. */
+/** Todo lo que la persona seleccionó en los 6 pasos. */
 export interface SeleccionWizard {
   mood: Mood[];
   generos: Genero[];
   tematicas: Tematica[];
-  estilo: Estilo | null;
   voces: VozWizard[];
   edad: Edad | null;
-  /** Fechas `YYYY-MM-DD` del paso 7, derivadas de la programación. */
+  /** Fechas `YYYY-MM-DD` del paso 6, derivadas de la programación. */
   dias: FechaISO[];
   franjas: Franja[];
 }
@@ -77,7 +75,6 @@ const SELECCION_VACIA: SeleccionWizard = {
   mood: [],
   generos: [],
   tematicas: [],
-  estilo: null,
   voces: [],
   edad: null,
   dias: [],
@@ -245,12 +242,12 @@ export const useMatchStore = create<EstadoMatch>()(
 
       siguientePaso: () =>
         set((estado) =>
-          estado.paso >= 6 ? { pantalla: 'agendaPaso' as Pantalla } : { paso: estado.paso + 1 },
+          estado.paso >= 5 ? { pantalla: 'agendaPaso' as Pantalla } : { paso: estado.paso + 1 },
         ),
 
       pasoAnterior: () =>
         set((estado) => {
-          if (estado.pantalla === 'agendaPaso') return { pantalla: 'wizard', paso: 6 };
+          if (estado.pantalla === 'agendaPaso') return { pantalla: 'wizard', paso: 5 };
           if (estado.paso <= 1) return { pantalla: 'bienvenida', paso: 1 };
           return { paso: estado.paso - 1 };
         }),
@@ -282,7 +279,12 @@ export const useMatchStore = create<EstadoMatch>()(
         }),
 
       fijarUnico: (clave, valor) =>
-        set((estado) => ({ seleccion: { ...estado.seleccion, [clave]: valor } })),
+        set((estado) => ({
+          // La clave llega validada por el vocabulario del paso (EDADES), así que
+          // el objeto resultante respeta `SeleccionWizard` aunque TS no pueda
+          // inferirlo desde una clave computada.
+          seleccion: { ...estado.seleccion, [clave]: valor } as SeleccionWizard,
+        })),
 
       fijarCatalogo: (autores, actividades, diasEvento) =>
         set((estado) => ({
