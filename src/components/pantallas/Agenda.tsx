@@ -131,32 +131,16 @@ export function Agenda() {
           <button
             type="button"
             onClick={() => abrirHojaCompartir(true)}
-            aria-label="Compartir mi agenda"
-            className="flex min-h-[48px] w-[52px] flex-shrink-0 items-center justify-center rounded-pill border-none bg-transparent text-burgundy shadow-[inset_0_0_0_2px_var(--color-burgundy)]"
+            aria-label="Enviar y Guardar mi agenda"
+            className="flex min-h-[48px] cursor-pointer flex-shrink-0 items-center justify-center rounded-pill border-none bg-coral px-7 font-display text-[14px] font-bold text-burgundy transition-opacity duration-150 ease-standard active:opacity-80"
           >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <circle cx="18" cy="5" r="3" />
-              <circle cx="6" cy="12" r="3" />
-              <circle cx="18" cy="19" r="3" />
-              <line x1="8.6" y1="13.5" x2="15.4" y2="17.5" />
-              <line x1="15.4" y1="6.5" x2="8.6" y2="10.5" />
-            </svg>
+            Enviar
           </button>
           <a
             href="https://feria-libro-17-programacion.vercel.app/"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex min-h-[48px] flex-1 items-center justify-center rounded-pill border-none bg-coral px-[6px] text-center font-display text-[14px] font-bold text-burgundy no-underline"
+            className="flex min-h-[48px] flex-1 cursor-pointer items-center justify-center rounded-pill border-none bg-transparent px-[6px] text-center font-display text-[14px] font-bold text-burgundy no-underline shadow-[inset_0_0_0_2px_var(--color-burgundy)] transition-opacity duration-150 ease-standard hover:text-burgundy active:opacity-80"
           >
             Ver Programación
           </a>

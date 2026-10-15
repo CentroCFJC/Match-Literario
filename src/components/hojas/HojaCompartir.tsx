@@ -15,11 +15,11 @@ export function HojaCompartir() {
   const agenda = construirAgenda(idsAgenda, actividades, autores);
 
   return (
-    <HojaInferior onCerrar={cerrar} zIndex={24} altoMaximo="100%" etiqueta="Compartir mi agenda">
+    <HojaInferior onCerrar={cerrar} zIndex={24} altoMaximo="100%" etiqueta="Enviar y Guardar mi agenda">
       <div className="px-6 pb-7 pt-[22px]">
         <ManijaHoja />
         <h2 className="m-0 mb-1 text-center font-display text-[20px] font-extrabold text-ink">
-          Compartir mi agenda
+          Enviar y Guardar mi agenda
         </h2>
         <p className="m-0 mb-[22px] text-center font-body text-[13px] text-text-muted">
           Envía tu ruta por la Feria a quien quieras.
